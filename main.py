@@ -73,7 +73,6 @@ class Test(QWidget, Ui_Form):
             self.log_show('文件打开失败')
 
     # 单幅图像处理 打开本底文件
-
     def click_open_dark_sig(self):
         try:
             # 读入图像的宽和高
@@ -117,7 +116,6 @@ class Test(QWidget, Ui_Form):
             self.log_show('文件打开失败')
 
     # 单幅图像处理 扣本底函数
-
     def click_sub_dark_sig(self):
         # 图像非空判断
         if (len(self.img_origin_mean_sig)) > 0 and (len(self.img_dark_sig) > 0):
@@ -144,8 +142,14 @@ class Test(QWidget, Ui_Form):
             self.log_show('未导入图像')
 
     def click_dis_smear(self):
-        pass
+        # 扣完本底的图像 转二维矩阵
+        raw_width = self.spinBox_img_width.value()
+        raw_height = self.spinBox_img_height.value()
+        raw_data = np.array(self.img_sub_dark_sig).reshape(raw_width, raw_height)
 
+        t = self.doubleSpinBox_shift.value() / self.doubleSpinBox_integration.value()
+        
+        
 # ----------------内部函数----------------
     # 记录日志函数
     def log_show(self, foo_txt):
