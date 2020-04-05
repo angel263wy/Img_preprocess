@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>644</width>
+    <width>711</width>
     <height>401</height>
    </rect>
   </property>
@@ -16,33 +16,218 @@
   <widget class="QTextEdit" name="textEdit_log">
    <property name="geometry">
     <rect>
-     <x>20</x>
-     <y>280</y>
+     <x>10</x>
+     <y>290</y>
      <width>411</width>
-     <height>101</height>
+     <height>91</height>
     </rect>
    </property>
   </widget>
-  <widget class="QPushButton" name="pushButton_log_clear">
+  <widget class="QTabWidget" name="tabWidget">
    <property name="geometry">
     <rect>
-     <x>440</x>
-     <y>360</y>
-     <width>75</width>
-     <height>23</height>
+     <x>10</x>
+     <y>10</y>
+     <width>221</width>
+     <height>271</height>
     </rect>
    </property>
-   <property name="text">
-    <string>清空</string>
+   <property name="currentIndex">
+    <number>1</number>
    </property>
+   <widget class="QWidget" name="tab">
+    <attribute name="title">
+     <string>单通道预处理</string>
+    </attribute>
+    <widget class="QWidget" name="layoutWidget">
+     <property name="geometry">
+      <rect>
+       <x>30</x>
+       <y>10</y>
+       <width>91</width>
+       <height>181</height>
+      </rect>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_3">
+      <item>
+       <widget class="QPushButton" name="pushButton_openIMG_sig">
+        <property name="text">
+         <string>打开图像文件</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="pushButton_open_dark_sig">
+        <property name="text">
+         <string>打开本底文件</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="pushButton_sub_dark_sig">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="text">
+         <string>扣本底</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="pushButton_dis_smear">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="text">
+         <string>校正帧转移</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </widget>
+   <widget class="QWidget" name="tab_2">
+    <attribute name="title">
+     <string>速读图像DN值</string>
+    </attribute>
+    <widget class="QGroupBox" name="groupBox_2">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>10</y>
+       <width>191</width>
+       <height>221</height>
+      </rect>
+     </property>
+     <property name="title">
+      <string>图像区域选择</string>
+     </property>
+     <widget class="QLabel" name="label_8">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>20</y>
+        <width>121</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>起点坐标（左上角） </string>
+      </property>
+     </widget>
+     <widget class="QSpinBox" name="spinBox_startX_readdn">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>40</y>
+        <width>51</width>
+        <height>22</height>
+       </rect>
+      </property>
+      <property name="maximum">
+       <number>2000</number>
+      </property>
+      <property name="value">
+       <number>510</number>
+      </property>
+     </widget>
+     <widget class="QSpinBox" name="spinBox_startY_readdn">
+      <property name="geometry">
+       <rect>
+        <x>70</x>
+        <y>40</y>
+        <width>51</width>
+        <height>22</height>
+       </rect>
+      </property>
+      <property name="maximum">
+       <number>2000</number>
+      </property>
+      <property name="value">
+       <number>510</number>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_9">
+      <property name="geometry">
+       <rect>
+        <x>80</x>
+        <y>120</y>
+        <width>111</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>终点坐标（右下角）</string>
+      </property>
+     </widget>
+     <widget class="QSpinBox" name="spinBox_endX_readdn">
+      <property name="geometry">
+       <rect>
+        <x>70</x>
+        <y>140</y>
+        <width>51</width>
+        <height>22</height>
+       </rect>
+      </property>
+      <property name="maximum">
+       <number>2000</number>
+      </property>
+      <property name="value">
+       <number>520</number>
+      </property>
+     </widget>
+     <widget class="QSpinBox" name="spinBox_endY_readdn">
+      <property name="geometry">
+       <rect>
+        <x>130</x>
+        <y>140</y>
+        <width>51</width>
+        <height>22</height>
+       </rect>
+      </property>
+      <property name="maximum">
+       <number>2000</number>
+      </property>
+      <property name="value">
+       <number>520</number>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_10">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>80</y>
+        <width>131</width>
+        <height>20</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>X和Y与S3软件定义一致</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pushButton_openIMG_readDN">
+      <property name="geometry">
+       <rect>
+        <x>90</x>
+        <y>190</y>
+        <width>89</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>打开图像文件</string>
+      </property>
+     </widget>
+    </widget>
+   </widget>
   </widget>
   <widget class="QGroupBox" name="groupBox">
    <property name="geometry">
     <rect>
-     <x>440</x>
-     <y>30</y>
+     <x>240</x>
+     <y>20</y>
      <width>191</width>
-     <height>191</height>
+     <height>231</height>
     </rect>
    </property>
    <property name="title">
@@ -116,7 +301,7 @@
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>90</y>
+      <y>80</y>
       <width>164</width>
       <height>80</height>
      </rect>
@@ -151,12 +336,15 @@
        <item>
         <widget class="QLabel" name="label_4">
          <property name="text">
-          <string>行转移时间/ms</string>
+          <string>预留参数</string>
          </property>
         </widget>
        </item>
        <item>
         <widget class="QDoubleSpinBox" name="doubleSpinBox_shift">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
          <property name="decimals">
           <number>4</number>
          </property>
@@ -167,7 +355,7 @@
           <double>0.001000000000000</double>
          </property>
          <property name="value">
-          <double>0.006500000000000</double>
+          <double>0.000000000000000</double>
          </property>
         </widget>
        </item>
@@ -199,84 +387,85 @@
      </item>
     </layout>
    </widget>
+   <widget class="QWidget" name="layoutWidget">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>170</y>
+      <width>161</width>
+      <height>52</height>
+     </rect>
+    </property>
+    <layout class="QVBoxLayout" name="verticalLayout_2">
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_6">
+       <item>
+        <widget class="QLabel" name="label_5">
+         <property name="text">
+          <string>帧转移起始行</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QSpinBox" name="spinBox_smear_start_line">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="minimum">
+          <number>0</number>
+         </property>
+         <property name="maximum">
+          <number>9999</number>
+         </property>
+         <property name="value">
+          <number>0</number>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_7">
+       <item>
+        <widget class="QLabel" name="label_7">
+         <property name="text">
+          <string>帧转移结束行</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QSpinBox" name="spinBox_smear_end_line">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="minimum">
+          <number>0</number>
+         </property>
+         <property name="maximum">
+          <number>9999</number>
+         </property>
+         <property name="value">
+          <number>0</number>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+    </layout>
+   </widget>
   </widget>
-  <widget class="QTabWidget" name="tabWidget">
+  <widget class="QPushButton" name="pushButton_log_clear">
    <property name="geometry">
     <rect>
-     <x>20</x>
-     <y>40</y>
-     <width>391</width>
-     <height>231</height>
+     <x>350</x>
+     <y>260</y>
+     <width>75</width>
+     <height>23</height>
     </rect>
    </property>
-   <property name="currentIndex">
-    <number>0</number>
+   <property name="text">
+    <string>清空</string>
    </property>
-   <widget class="QWidget" name="tab">
-    <attribute name="title">
-     <string>单通道预处理</string>
-    </attribute>
-    <widget class="QPushButton" name="pushButton_openIMG_sig">
-     <property name="geometry">
-      <rect>
-       <x>30</x>
-       <y>30</y>
-       <width>81</width>
-       <height>23</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>打开图像文件</string>
-     </property>
-    </widget>
-    <widget class="QPushButton" name="pushButton_sub_dark_sig">
-     <property name="enabled">
-      <bool>false</bool>
-     </property>
-     <property name="geometry">
-      <rect>
-       <x>30</x>
-       <y>90</y>
-       <width>81</width>
-       <height>23</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>扣本底</string>
-     </property>
-    </widget>
-    <widget class="QPushButton" name="pushButton_dis_smear">
-     <property name="geometry">
-      <rect>
-       <x>140</x>
-       <y>90</y>
-       <width>81</width>
-       <height>23</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>扣帧转移</string>
-     </property>
-    </widget>
-    <widget class="QPushButton" name="pushButton_open_dark_sig">
-     <property name="geometry">
-      <rect>
-       <x>140</x>
-       <y>30</y>
-       <width>81</width>
-       <height>23</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>打开本底文件</string>
-     </property>
-    </widget>
-   </widget>
-   <widget class="QWidget" name="tab_2">
-    <attribute name="title">
-     <string>多通道预处理</string>
-    </attribute>
-   </widget>
   </widget>
  </widget>
  <resources/>
@@ -288,11 +477,11 @@
    <slot>click_log_clear()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>486</x>
-     <y>372</y>
+     <x>378</x>
+     <y>263</y>
     </hint>
     <hint type="destinationlabel">
-     <x>561</x>
+     <x>513</x>
      <y>367</y>
     </hint>
    </hints>
@@ -304,8 +493,8 @@
    <slot>click_openIMG_sig()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>87</x>
-     <y>100</y>
+     <x>83</x>
+     <y>77</y>
     </hint>
     <hint type="destinationlabel">
      <x>84</x>
@@ -320,8 +509,8 @@
    <slot>click_open_dark_sig()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>200</x>
-     <y>101</y>
+     <x>86</x>
+     <y>119</y>
     </hint>
     <hint type="destinationlabel">
      <x>146</x>
@@ -336,8 +525,8 @@
    <slot>click_sub_dark_sig()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>205</x>
-     <y>160</y>
+     <x>131</x>
+     <y>161</y>
     </hint>
     <hint type="destinationlabel">
      <x>127</x>
@@ -352,12 +541,28 @@
    <slot>click_dis_smear()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>331</x>
-     <y>159</y>
+     <x>131</x>
+     <y>203</y>
     </hint>
     <hint type="destinationlabel">
      <x>266</x>
      <y>15</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushButton_openIMG_readDN</sender>
+   <signal>clicked()</signal>
+   <receiver>Form</receiver>
+   <slot>click_openIMG_readDN()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>154</x>
+     <y>232</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>250</x>
+     <y>263</y>
     </hint>
    </hints>
   </connection>
@@ -369,5 +574,6 @@
   <slot>click_cal_mean_sig()</slot>
   <slot>click_sub_dark_sig()</slot>
   <slot>click_dis_smear()</slot>
+  <slot>click_openIMG_readDN()</slot>
  </slots>
 </ui>
