@@ -126,7 +126,8 @@ class Test(QWidget, Ui_Form):
             
             # 扣本底完成 确认操作
             res = QMessageBox.question(self, '扣本底工作完成，确认后续操作', '选是输出图像，选否暂不输出')
-
+            self.pushButton_dis_smear.setEnabled(True) # 使能帧转移校正按钮
+            
             if res == QMessageBox.Yes:
                 try:
                     filename, flt = QFileDialog.getSaveFileName(
@@ -145,43 +146,38 @@ class Test(QWidget, Ui_Form):
     '''
     帧转移校正函数 
     算法：取最先转移的前N行，每列求平均，再用正常图像相同列减去平均值  
-    
+    注意：np中x表示列 y表示行
     '''    
     def click_dis_smear(self):
-        # 图像非空判断
-        
-        self.img_sub_dark_sig = np.fromfile('0sub_bd.raw', dtype=np.uint16)
-        
+        # 图像非空判断        
         if len(self.img_sub_dark_sig) > 0: 
-            # 扣完本底的图像 转二维矩阵
+            # 扣完本底的图像 转二维矩阵 注意 X表示高 Y表示宽
             raw_width = self.spinBox_img_width.value()
             raw_height = self.spinBox_img_height.value()
-            raw_data = np.array(self.img_sub_dark_sig).reshape(raw_width, raw_height)
+            raw_data = np.array(self.img_sub_dark_sig).reshape(raw_height, raw_width)
             
-            # 取暗行 求平均 
+            # 取暗行数据
+            # 取N行时 直接用切片操作 对X进行操作取得N行 
             dark_line_start = self.spinBox_smear_start_line.value()
             dark_line_end = self.spinBox_smear_end_line.value()
-            dark_lines = np.mean(raw_data[dark_line_start:dark_line_end], axis=0) 
-            
-            # 扣过本底后图像 所有行减去暗行完成校正
-            for i in range(raw_width):
-                self.img_final_sig[i] = raw_data[:,i] - dark_lines 
-            
+            dark_lines = raw_data[dark_line_start:dark_line_end+1, :]
+            # 求平均
+            dark_lines_mean = np.mean(dark_lines, axis=0) 
+            # 帧转移校正 按行扣暗行平均值 广播算法 矩阵每行减去向量 并扣除负值
+            self.img_final_sig = np.clip(raw_data - dark_lines_mean, 0, 65530)
+                        
             # 多维数组变一维 便于输出
             self.img_final_sig =  self.img_final_sig.flatten()            
             try:
                     filename, flt = QFileDialog.getSaveFileName(
                         self, filter='raw file(*.raw)', caption='帧转移校正后图像输出')
-                    self.raw_file_output(
-                        filename, self.img_final_sig)
-                    self.log_show('扣本底的图像已输出 位于' + filename)
+                    self.raw_file_output(filename, self.img_final_sig)
+                    self.log_show('帧转移校正图像已输出 位于' + filename)
             except Exception as ee:
                 self.log_show('未选择输出的文件名 帧转移校正的图像未输出')
             
         else:
-            self.log_show('未完成扣本底，不能进行帧转移校正')
-        
-        # t = self.doubleSpinBox_shift.value() / self.doubleSpinBox_integration.value()
+            self.log_show('未完成扣本底，不能进行帧转移校正')        
         
     '''
     速读图像DN值函数 
@@ -213,6 +209,8 @@ class Test(QWidget, Ui_Form):
                 endY = self.spinBox_endY_readdn.value()
                                 
                 # 获取图像中最大值 最小值和平均值
+                # S3中X和Y 与np的XY正好相反 而np与常识中的行列一致 即X为行 Y为列
+                # 取区域时 为了和S3方向一致 X和Y的位置需要对调
                 max = list()
                 min = list()
                 mean = list()

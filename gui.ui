@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>711</width>
+    <width>442</width>
     <height>401</height>
    </rect>
   </property>
@@ -33,7 +33,7 @@
     </rect>
    </property>
    <property name="currentIndex">
-    <number>1</number>
+    <number>0</number>
    </property>
    <widget class="QWidget" name="tab">
     <attribute name="title">
@@ -318,6 +318,9 @@
        </item>
        <item>
         <widget class="QDoubleSpinBox" name="doubleSpinBox_integration">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
          <property name="maximum">
           <double>999.990000000000009</double>
          </property>
@@ -372,6 +375,9 @@
        </item>
        <item>
         <widget class="QDoubleSpinBox" name="doubleSpinBox_gain">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
          <property name="maximum">
           <double>999.990000000000009</double>
          </property>
@@ -409,7 +415,7 @@
        <item>
         <widget class="QSpinBox" name="spinBox_smear_start_line">
          <property name="enabled">
-          <bool>false</bool>
+          <bool>true</bool>
          </property>
          <property name="minimum">
           <number>0</number>
@@ -436,7 +442,7 @@
        <item>
         <widget class="QSpinBox" name="spinBox_smear_end_line">
          <property name="enabled">
-          <bool>false</bool>
+          <bool>true</bool>
          </property>
          <property name="minimum">
           <number>0</number>
@@ -445,7 +451,7 @@
           <number>9999</number>
          </property>
          <property name="value">
-          <number>0</number>
+          <number>5</number>
          </property>
         </widget>
        </item>
