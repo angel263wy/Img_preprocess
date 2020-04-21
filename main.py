@@ -178,7 +178,49 @@ class Test(QWidget, Ui_Form):
             
         else:
             self.log_show('未完成扣本底，不能进行帧转移校正')        
+    
+    '''
+    1M30帧转移校正
+    根据积分时间求逆矩阵 再计算
+    可以一次进行多个1M30文件的帧转移校正
+    输出文件在原文件后增加_dis_smearing
+    '''
+    def click_1M30dis_smear(self):
+        # 获取积分时间 界面中输入ms 需要转换为us
+        integration_time = self.doubleSpinBox_integration.value() * 1000
+        t = 1.3 / integration_time
         
+        # 生成帧转移校正矩阵
+        M = np.identity(1024)  # 生成单位矩阵
+        for i in range(1024):  # i 表示行
+            for j in range(1024):  # j 表示列
+                if j < i:
+                    M[i][j] = t
+
+        M1 = np.linalg.inv(M)  # 求逆矩阵 图像与其点乘即可
+        
+        # 读入所有文件数据        
+        filelist, filt = QFileDialog.getOpenFileNames(self, filter='raw file(*.raw)', caption='打开待校正的文件')
+        if len(filelist):  # 选择文件数大于0 则处理 否则不处理            
+            # 读入数据 转为矩阵 点乘计算帧转移 输出
+            for filename in filelist:
+                raw_data = np.fromfile(filename, dtype=np.uint16)
+                raw_data = np.reshape(raw_data, (1024, 1024))
+                img = np.dot(M1, raw_data)
+                # 除去小于0的数据
+                raw_dm = np.clip(img, 0, 4095)  
+                # 文件输出
+                f_out = filename[ :-4] + '_dis_smearing.raw'
+                with open(f_out, 'wb') as f:
+                    for i in raw_dm.flat:
+                        foo = struct.pack('H', int(i))
+                        f.write(foo)
+                    self.log_show('1M3O帧转移校正完成, 输出文件:' + f_out)
+
+        else:
+            self.log_show('未选择文件')
+        
+            
     '''
     速读图像DN值函数 
     打开文件后 读取图像区域

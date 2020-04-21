@@ -45,7 +45,7 @@
        <x>30</x>
        <y>10</y>
        <width>91</width>
-       <height>181</height>
+       <height>211</height>
       </rect>
      </property>
      <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -80,6 +80,13 @@
         </property>
         <property name="text">
          <string>校正帧转移</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="pushButton_1M30dis_smear">
+        <property name="text">
+         <string>1M30除帧转移</string>
         </property>
        </widget>
       </item>
@@ -319,7 +326,7 @@
        <item>
         <widget class="QDoubleSpinBox" name="doubleSpinBox_integration">
          <property name="enabled">
-          <bool>false</bool>
+          <bool>true</bool>
          </property>
          <property name="maximum">
           <double>999.990000000000009</double>
@@ -499,8 +506,8 @@
    <slot>click_openIMG_sig()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>83</x>
-     <y>77</y>
+     <x>86</x>
+     <y>75</y>
     </hint>
     <hint type="destinationlabel">
      <x>84</x>
@@ -515,8 +522,8 @@
    <slot>click_open_dark_sig()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>86</x>
-     <y>119</y>
+     <x>89</x>
+     <y>115</y>
     </hint>
     <hint type="destinationlabel">
      <x>146</x>
@@ -532,7 +539,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>131</x>
-     <y>161</y>
+     <y>155</y>
     </hint>
     <hint type="destinationlabel">
      <x>127</x>
@@ -548,7 +555,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>131</x>
-     <y>203</y>
+     <y>195</y>
     </hint>
     <hint type="destinationlabel">
      <x>266</x>
@@ -572,6 +579,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>pushButton_1M30dis_smear</sender>
+   <signal>clicked()</signal>
+   <receiver>Form</receiver>
+   <slot>click_1M30dis_smear()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>91</x>
+     <y>219</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>7</x>
+     <y>276</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>click_log_clear()</slot>
@@ -581,5 +604,6 @@
   <slot>click_sub_dark_sig()</slot>
   <slot>click_dis_smear()</slot>
   <slot>click_openIMG_readDN()</slot>
+  <slot>click_1M30dis_smear()</slot>
  </slots>
 </ui>
