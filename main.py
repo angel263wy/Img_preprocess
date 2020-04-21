@@ -32,7 +32,7 @@ class Test(QWidget, Ui_Form):
     def click_log_clear(self):  # 清除日志界面
         self.textEdit_log.clear()
 
-    # 单幅图像处理 打开图像文件
+    # 图像处理 打开图像文件 求平均后保存和输出
     def click_openIMG_sig(self):
         try:
             # 读入图像的宽和高
@@ -73,7 +73,7 @@ class Test(QWidget, Ui_Form):
         except Exception as e:
             self.log_show('文件打开失败')
 
-    # 单幅图像处理 打开本底文件
+    # 本底图像处理 打开本底文件后求平均 保存并输出
     def click_open_dark_sig(self):
         try:
             # 读入图像的宽和高
@@ -115,7 +115,7 @@ class Test(QWidget, Ui_Form):
         except Exception as e:
             self.log_show('文件打开失败')
 
-    # 单幅图像处理 扣本底函数
+    # 扣本底函数 
     def click_sub_dark_sig(self):
         # 图像非空判断 
         if (len(self.img_origin_mean_sig)) > 0 and (len(self.img_dark_sig) > 0):
