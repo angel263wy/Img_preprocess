@@ -209,28 +209,23 @@ class Test(QWidget, Ui_Form):
 
         M1 = np.linalg.inv(M)  # 求逆矩阵 图像与其点乘即可
         
-        # 读入所有文件数据        
-        filelist, filt = QFileDialog.getOpenFileNames(self, filter='raw file(*.raw)', caption='打开待校正的文件')
-        if len(filelist):  # 选择文件数大于0 则处理 否则不处理            
-            # 读入数据 转为矩阵 点乘计算帧转移 输出
-            for filename in filelist:
-                raw_data = np.fromfile(filename, dtype=np.uint16)
-                raw_data = np.reshape(raw_data, (1024, 1024))
-                img = np.dot(M1, raw_data)
-                # 除去小于0的数据
-                raw_dm = np.clip(img, 0, 4095)  
-                # 文件输出
-                f_out = filename[ :-4] + '_dis_smearing.raw'
-                with open(f_out, 'wb') as f:
-                    for i in raw_dm.flat:
-                        foo = struct.pack('H', int(i))
-                        f.write(foo)
-                    self.log_show('1M3O帧转移校正完成, 输出文件:' + f_out)
-
-        else:
+        #帧转移校正
+        raw_data = np.reshape(self.img_sub_dark_sig, (1024, 1024))
+        img = np.dot(M1, raw_data)
+        # 除去小于0的数据
+        raw_dm = np.clip(img, 0, 4095)  
+        # 文件输出
+        f_out, filt = QFileDialog.getSaveFileName(self, filter='raw file(*.raw)', caption='保存校正后图像')
+        if len(f_out) == 0:
             self.log_show('未选择文件')
-        
-            
+        else:                
+            with open(f_out, 'wb') as f:
+                for i in raw_dm.flat:
+                    foo = struct.pack('H', int(i))
+                    f.write(foo)
+                self.log_show('1M3O帧转移校正完成, 输出文件:' + f_out)
+
+
     '''
     速读图像DN值函数 
     打开文件后 读取图像区域
@@ -244,8 +239,7 @@ class Test(QWidget, Ui_Form):
             raw_height = self.spinBox_img_height.value()
 
             # 读入所有文件数据
-            filelist, filt = QFileDialog.getOpenFileNames(
-                self, filter='raw file(*.raw)', caption='打开图像文件')
+            filelist, filt = QFileDialog.getOpenFileNames(self, filter='raw file(*.raw)', caption='打开图像文件')
             if len(filelist):  # 选择文件数大于0 则处理 否则不处理
                 # 创建三维空数组 并读入图像  
                 # 特别注意 reshape X为高 Y为宽 不能弄反
