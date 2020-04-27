@@ -180,12 +180,22 @@ class Test(QWidget, Ui_Form):
             self.log_show('未完成扣本底，不能进行帧转移校正')        
     
     '''
-    1M30帧转移校正
+    1M30 扣本底和帧转移校正
     根据积分时间求逆矩阵 再计算
     可以一次进行多个1M30文件的帧转移校正
     输出文件在原文件后增加_dis_smearing
     '''
     def click_1M30dis_smear(self):
+        # 扣本底 当无图像数据时返回
+        if (len(self.img_origin_mean_sig)) <= 0 and (len(self.img_dark_sig) <= 0):
+            self.log_show('未导入图像')
+            return
+        else:
+            # 扣本底算法
+            self.img_sub_dark_sig = self.img_origin_mean_sig - self.img_dark_sig
+            # 扣除负数
+            self.img_sub_dark_sig = np.clip(self.img_sub_dark_sig, 0, 65536)
+        
         # 获取积分时间 界面中输入ms 需要转换为us
         integration_time = self.doubleSpinBox_integration.value() * 1000
         t = 1.3 / integration_time
@@ -282,7 +292,48 @@ class Test(QWidget, Ui_Form):
                 self.log_show('未选择文件')
 
         except Exception as e:
-            self.log_show('文件打开失败')            
+            self.log_show('文件打开失败')       
+        
+            
+    '''
+    图像裁剪函数
+    读入X和Y 选择最后的方向尺寸进行裁剪后输出
+    '''
+    def click_img_cut(self):
+        # 读入图像区域窗口
+        startX = self.spinBox_cutX.value()
+        startY = self.spinBox_cutY.value()
+        cut_size = self.spinBox_cut_size.value()
+
+        # 读入图像的宽和高
+        raw_width = self.spinBox_img_width.value()
+        raw_height = self.spinBox_img_height.value()
+        
+        # 裁剪尺寸合理性判断 不能超过图像的宽和高
+        if startX + cut_size > raw_width-1 :
+            self.log_show('裁剪区域超过图像尺寸')
+            return
+        elif startY + cut_size > raw_height-1:
+            self.log_show('裁剪区域超过图像尺寸')
+            return
+        
+        # 读入单幅图像
+        filename, filt = QFileDialog.getOpenFileName(self, filter='raw file(*.raw)', caption='打开图像文件')
+        if len(filename) == 0:
+            self.log_show('未选择文件')
+            return
+        else:            
+            # 读入图像 特别注意 reshape X为高 Y为宽 不能弄反            
+            tmp = np.fromfile(filename, dtype=np.uint16)
+            raw_data = np.reshape(tmp, (raw_height, raw_width))
+            # 裁剪
+            img = raw_data[startY:startY+cut_size, startX:startX+cut_size]
+            # 输出
+            fout = filename[:-4] + '_cut_size_'+str(cut_size)+'X'+str(cut_size)+'.raw'
+            self.raw_file_output(fout, img)
+            self.log_show('图像裁剪完成 输出文件 '+ fout)
+
+        
             
         
 # ----------------内部函数----------------
@@ -295,8 +346,8 @@ class Test(QWidget, Ui_Form):
     # raw文件输出
     def raw_file_output(self, fname, raw_data):
         with open(fname, 'wb') as f:
-            raw_data = np.clip(raw_data, 0, 65536)  # 除去负数
-            for i in raw_data:
+            raw_data[raw_data < 0] = 0  # 除去负数
+            for i in raw_data.flatten():
                 foo = struct.pack('H', int(i))
                 f.write(foo)
 
