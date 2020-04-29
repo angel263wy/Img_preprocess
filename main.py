@@ -228,8 +228,8 @@ class Test(QWidget, Ui_Form):
 
     '''
     速读图像DN值函数 
-    打开文件后 读取图像区域
-    判断最大值、最小值和平均值
+    1 打开文件后 读取图像区域 判断区域最大值、最小值和平均值
+    2 计算重心
     输出csv文件
     '''
     def click_openIMG_readDN(self):
@@ -253,6 +253,9 @@ class Test(QWidget, Ui_Form):
                 startY = self.spinBox_startY_readdn.value()
                 endX = self.spinBox_endX_readdn.value()
                 endY = self.spinBox_endY_readdn.value()
+                #读入求重心的最大值和最小值
+                g_max = self.spinBox_gravity_max.value()
+                g_min = self.spinBox_gravity_min.value()
                                 
                 # 获取图像中最大值 最小值和平均值
                 # S3中X和Y 与np的XY正好相反 而np与常识中的行列一致 即X为行 Y为列
@@ -260,21 +263,30 @@ class Test(QWidget, Ui_Form):
                 max = list()
                 min = list()
                 mean = list()
+                # 存放重心坐标
+                center_gravity_X = list()
+                center_gravity_Y = list()
+                
                 for i, filename in enumerate(filelist):
                     tmp = raw_data[i, startY:endY+1, startX:endX+1]
                     max.append(np.max(tmp))
                     min.append(np.min(tmp))
                     mean.append(np.mean(tmp))
+                    xc, yc = self.cal_center_gravity(raw_data[i], g_max, g_min)
+                    center_gravity_X.append(xc)
+                    center_gravity_Y.append(yc)
                 
                 # 创建dataframe用于输出 pd.Index函数用于生成从1开始的索引 
                 res = pd.DataFrame({'文件名': filelist,
+                                    '光斑重心S3-X': center_gravity_Y,
+                                    '光斑重心S3-Y': center_gravity_X,
                                     '最大值': max,
                                     '最小值': min,
                                     '平均值': mean
-                                    }, columns=['文件名', '最大值', '最小值', '平均值'],
+                                    }, columns=['文件名','光斑重心S3-X','光斑重心S3-Y', '最大值', '最小值', '平均值'],
                                     index=pd.Index(range(1, len(filelist)+1)))
                                 
-                self.log_show('打开图像文件 共计' + str(len(filelist)) + '个文件')
+                self.log_show('处理图像 共计' + str(len(filelist)) + '个文件')
                 
                 # 输出文件
                 outfile = time.strftime('%Y%m%d%H%M%S.csv', time.localtime(time.time()))
@@ -344,6 +356,30 @@ class Test(QWidget, Ui_Form):
             for i in raw_data.flatten():
                 foo = struct.pack('H', int(i))
                 f.write(foo)
+    
+    '''
+    计算重心函数
+    算法:   大于最大值和小于最小值的像素清零 
+            每个像素所在坐标值乘以DN值 求和后除以全像面图像DN值之和   
+            使用meshgird函数生成坐标矩阵 用于元素乘以对应坐标值
+    '''
+    def cal_center_gravity(self, img, max, min):
+        # 数据清洗 在范围外的清零 避免影响重心计算
+        img[img < min] = 0
+        img[img > max] = 0
+        
+        # 获取宽度和高度 计算坐标矩阵 及矩阵中每个元素坐标值与元素数值一致        
+        height, width = img.shape
+        x = np.arange(0, width)
+        y = np.arange(0, height)
+        #mx和my均为(heigt,width)矩阵 
+        # y每行均为0,1,2...width mx第0行全0,第1行全1,第2行全2...最后一行全为height 
+        my, mx = np.meshgrid(x,y)  
+        # 计算重心 DN值乘以坐标值的累加和 / 全图像DN值累加和
+        cenx = np.sum(img * mx) / np.sum(img)
+        ceny = np.sum(img * my) / np.sum(img)
+        
+        return cenx, ceny
 
 
 if __name__ == '__main__':

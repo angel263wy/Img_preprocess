@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>384</width>
+    <width>378</width>
     <height>468</height>
    </rect>
   </property>
@@ -33,7 +33,7 @@
     </rect>
    </property>
    <property name="currentIndex">
-    <number>0</number>
+    <number>1</number>
    </property>
    <widget class="QWidget" name="tab">
     <attribute name="title">
@@ -76,70 +76,6 @@
       <property name="text">
        <string>打开本底文件</string>
       </property>
-     </widget>
-     <widget class="QWidget" name="layoutWidget">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>30</y>
-        <width>108</width>
-        <height>22</height>
-       </rect>
-      </property>
-      <layout class="QHBoxLayout" name="horizontalLayout">
-       <item>
-        <widget class="QLabel" name="label">
-         <property name="text">
-          <string>图像宽度</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QSpinBox" name="spinBox_img_width">
-         <property name="minimum">
-          <number>1</number>
-         </property>
-         <property name="maximum">
-          <number>9999</number>
-         </property>
-         <property name="value">
-          <number>1024</number>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </widget>
-     <widget class="QWidget" name="layoutWidget">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>60</y>
-        <width>108</width>
-        <height>22</height>
-       </rect>
-      </property>
-      <layout class="QHBoxLayout" name="horizontalLayout_2">
-       <item>
-        <widget class="QLabel" name="label_2">
-         <property name="text">
-          <string>图像高度</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QSpinBox" name="spinBox_img_height">
-         <property name="minimum">
-          <number>1</number>
-         </property>
-         <property name="maximum">
-          <number>9999</number>
-         </property>
-         <property name="value">
-          <number>1024</number>
-         </property>
-        </widget>
-       </item>
-      </layout>
      </widget>
     </widget>
     <widget class="QGroupBox" name="groupBox_5">
@@ -425,123 +361,20 @@
     <widget class="QGroupBox" name="groupBox_2">
      <property name="geometry">
       <rect>
-       <x>10</x>
+       <x>0</x>
        <y>10</y>
-       <width>191</width>
-       <height>221</height>
+       <width>341</width>
+       <height>261</height>
       </rect>
      </property>
      <property name="title">
       <string>图像区域选择</string>
      </property>
-     <widget class="QLabel" name="label_8">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>20</y>
-        <width>121</width>
-        <height>16</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>起点坐标（左上角） </string>
-      </property>
-     </widget>
-     <widget class="QSpinBox" name="spinBox_startX_readdn">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>40</y>
-        <width>51</width>
-        <height>22</height>
-       </rect>
-      </property>
-      <property name="maximum">
-       <number>2000</number>
-      </property>
-      <property name="value">
-       <number>510</number>
-      </property>
-     </widget>
-     <widget class="QSpinBox" name="spinBox_startY_readdn">
-      <property name="geometry">
-       <rect>
-        <x>70</x>
-        <y>40</y>
-        <width>51</width>
-        <height>22</height>
-       </rect>
-      </property>
-      <property name="maximum">
-       <number>2000</number>
-      </property>
-      <property name="value">
-       <number>510</number>
-      </property>
-     </widget>
-     <widget class="QLabel" name="label_9">
-      <property name="geometry">
-       <rect>
-        <x>80</x>
-        <y>120</y>
-        <width>111</width>
-        <height>16</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>终点坐标（右下角）</string>
-      </property>
-     </widget>
-     <widget class="QSpinBox" name="spinBox_endX_readdn">
-      <property name="geometry">
-       <rect>
-        <x>70</x>
-        <y>140</y>
-        <width>51</width>
-        <height>22</height>
-       </rect>
-      </property>
-      <property name="maximum">
-       <number>2000</number>
-      </property>
-      <property name="value">
-       <number>520</number>
-      </property>
-     </widget>
-     <widget class="QSpinBox" name="spinBox_endY_readdn">
-      <property name="geometry">
-       <rect>
-        <x>130</x>
-        <y>140</y>
-        <width>51</width>
-        <height>22</height>
-       </rect>
-      </property>
-      <property name="maximum">
-       <number>2000</number>
-      </property>
-      <property name="value">
-       <number>520</number>
-      </property>
-     </widget>
-     <widget class="QLabel" name="label_10">
-      <property name="geometry">
-       <rect>
-        <x>20</x>
-        <y>80</y>
-        <width>131</width>
-        <height>20</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>X和Y与S3软件定义一致</string>
-      </property>
-     </widget>
      <widget class="QPushButton" name="pushButton_openIMG_readDN">
       <property name="geometry">
        <rect>
-        <x>90</x>
-        <y>190</y>
+        <x>100</x>
+        <y>210</y>
         <width>89</width>
         <height>23</height>
        </rect>
@@ -549,6 +382,202 @@
       <property name="text">
        <string>打开图像文件</string>
       </property>
+     </widget>
+     <widget class="QGroupBox" name="groupBox_6">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>100</y>
+        <width>131</width>
+        <height>81</height>
+       </rect>
+      </property>
+      <property name="title">
+       <string>重心计算</string>
+      </property>
+      <widget class="QWidget" name="layoutWidget_2">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>20</y>
+         <width>114</width>
+         <height>22</height>
+        </rect>
+       </property>
+       <layout class="QHBoxLayout" name="horizontalLayout_4">
+        <item>
+         <widget class="QLabel" name="label_4">
+          <property name="text">
+           <string>最小DN值</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QSpinBox" name="spinBox_gravity_min">
+          <property name="minimum">
+           <number>0</number>
+          </property>
+          <property name="maximum">
+           <number>99999</number>
+          </property>
+          <property name="value">
+           <number>1000</number>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="layoutWidget_3">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>50</y>
+         <width>114</width>
+         <height>22</height>
+        </rect>
+       </property>
+       <layout class="QHBoxLayout" name="horizontalLayout_5">
+        <item>
+         <widget class="QLabel" name="label_6">
+          <property name="text">
+           <string>最大DN值</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QSpinBox" name="spinBox_gravity_max">
+          <property name="minimum">
+           <number>1</number>
+          </property>
+          <property name="maximum">
+           <number>99999</number>
+          </property>
+          <property name="singleStep">
+           <number>1</number>
+          </property>
+          <property name="value">
+           <number>9000</number>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </widget>
+     <widget class="QGroupBox" name="groupBox_7">
+      <property name="geometry">
+       <rect>
+        <x>150</x>
+        <y>10</y>
+        <width>181</width>
+        <height>171</height>
+       </rect>
+      </property>
+      <property name="title">
+       <string>特征区域计算</string>
+      </property>
+      <widget class="QLabel" name="label_8">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>20</y>
+         <width>121</width>
+         <height>16</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>起点坐标（左上角） </string>
+       </property>
+      </widget>
+      <widget class="QSpinBox" name="spinBox_startX_readdn">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>40</y>
+         <width>51</width>
+         <height>22</height>
+        </rect>
+       </property>
+       <property name="maximum">
+        <number>2000</number>
+       </property>
+       <property name="value">
+        <number>510</number>
+       </property>
+      </widget>
+      <widget class="QSpinBox" name="spinBox_startY_readdn">
+       <property name="geometry">
+        <rect>
+         <x>70</x>
+         <y>40</y>
+         <width>51</width>
+         <height>22</height>
+        </rect>
+       </property>
+       <property name="maximum">
+        <number>2000</number>
+       </property>
+       <property name="value">
+        <number>510</number>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_10">
+       <property name="geometry">
+        <rect>
+         <x>30</x>
+         <y>80</y>
+         <width>131</width>
+         <height>20</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>X和Y与S3软件定义一致</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_9">
+       <property name="geometry">
+        <rect>
+         <x>70</x>
+         <y>120</y>
+         <width>111</width>
+         <height>16</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>终点坐标（右下角）</string>
+       </property>
+      </widget>
+      <widget class="QSpinBox" name="spinBox_endY_readdn">
+       <property name="geometry">
+        <rect>
+         <x>120</x>
+         <y>140</y>
+         <width>51</width>
+         <height>22</height>
+        </rect>
+       </property>
+       <property name="maximum">
+        <number>2000</number>
+       </property>
+       <property name="value">
+        <number>520</number>
+       </property>
+      </widget>
+      <widget class="QSpinBox" name="spinBox_endX_readdn">
+       <property name="geometry">
+        <rect>
+         <x>60</x>
+         <y>140</y>
+         <width>51</width>
+         <height>22</height>
+        </rect>
+       </property>
+       <property name="maximum">
+        <number>2000</number>
+       </property>
+       <property name="value">
+        <number>520</number>
+       </property>
+      </widget>
      </widget>
     </widget>
    </widget>
@@ -566,7 +595,97 @@
     <string>清空</string>
    </property>
   </widget>
+  <widget class="QWidget" name="layoutWidget">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>70</y>
+     <width>108</width>
+     <height>22</height>
+    </rect>
+   </property>
+   <layout class="QHBoxLayout" name="horizontalLayout">
+    <item>
+     <widget class="QLabel" name="label">
+      <property name="text">
+       <string>图像宽度</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QSpinBox" name="spinBox_img_width">
+      <property name="minimum">
+       <number>1</number>
+      </property>
+      <property name="maximum">
+       <number>9999</number>
+      </property>
+      <property name="value">
+       <number>1024</number>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QWidget" name="layoutWidget">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>100</y>
+     <width>108</width>
+     <height>22</height>
+    </rect>
+   </property>
+   <layout class="QHBoxLayout" name="horizontalLayout_2">
+    <item>
+     <widget class="QLabel" name="label_2">
+      <property name="text">
+       <string>图像高度</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QSpinBox" name="spinBox_img_height">
+      <property name="minimum">
+       <number>1</number>
+      </property>
+      <property name="maximum">
+       <number>9999</number>
+      </property>
+      <property name="value">
+       <number>1030</number>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
  </widget>
+ <tabstops>
+  <tabstop>spinBox_img_width</tabstop>
+  <tabstop>spinBox_img_height</tabstop>
+  <tabstop>spinBox_gravity_min</tabstop>
+  <tabstop>spinBox_gravity_max</tabstop>
+  <tabstop>spinBox_startX_readdn</tabstop>
+  <tabstop>spinBox_startY_readdn</tabstop>
+  <tabstop>spinBox_endX_readdn</tabstop>
+  <tabstop>spinBox_endY_readdn</tabstop>
+  <tabstop>doubleSpinBox_integration</tabstop>
+  <tabstop>pushButton_1M30dis_smear</tabstop>
+  <tabstop>pushButton_openIMG_sig</tabstop>
+  <tabstop>pushButton_open_dark_sig</tabstop>
+  <tabstop>spinBox_smear_start_line</tabstop>
+  <tabstop>spinBox_smear_end_line</tabstop>
+  <tabstop>pushButton_sub_dark_sig</tabstop>
+  <tabstop>pushButton_dis_smear</tabstop>
+  <tabstop>spinBox_cutX</tabstop>
+  <tabstop>spinBox_cutY</tabstop>
+  <tabstop>spinBox_cut_size</tabstop>
+  <tabstop>pushButton_img_cut</tabstop>
+  <tabstop>pushButton_log_clear</tabstop>
+  <tabstop>textEdit_log</tabstop>
+  <tabstop>tabWidget</tabstop>
+  <tabstop>pushButton_openIMG_readDN</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>
