@@ -230,52 +230,98 @@ class Test(QWidget, Ui_Form):
     速读图像DN值函数 
     1 打开文件后 读取图像区域 判断区域最大值、最小值和平均值
     2 计算重心
+    
+    1 根据选择情况计算重心
+    2 找到重心坐标 进行nXn坐标求最大值最小值和平均值
     输出csv文件
     '''
-    def click_openIMG_readDN(self):
+    def click_openIMG_readDN(self):        
+        # 读入图像的宽和高
+        raw_width = self.spinBox_img_width.value()
+        raw_height = self.spinBox_img_height.value()
+        
+        #读入求重心的最大值和最小值
+        g_max = self.spinBox_gravity_max.value()
+        g_min = self.spinBox_gravity_min.value()
+        
+        # 读入平均值的区域
+        mean_zone = self.spinBox_readDN_mean_window_size.value()
+        
+        # 存放最值和平均值数据
+        max = list()
+        min = list()
+        mean = list()
+        # 存放重心坐标
+        center_gravity_X = list()
+        center_gravity_Y = list()
+        
         try:
-            # 读入图像的宽和高
-            raw_width = self.spinBox_img_width.value()
-            raw_height = self.spinBox_img_height.value()
-
             # 读入所有文件数据
             filelist, filt = QFileDialog.getOpenFileNames(self, filter='raw file(*.raw)', caption='打开图像文件')
-            if len(filelist):  # 选择文件数大于0 则处理 否则不处理
-                # 创建三维空数组 并读入图像  
-                # 特别注意 reshape X为高 Y为宽 不能弄反
-                raw_data = np.empty((len(filelist), raw_height, raw_width), dtype=np.uint16)
-                for i, filename in enumerate(filelist):
-                    tmp = np.fromfile(filename, dtype=np.uint16)
-                    raw_data[i] = np.reshape(tmp, (raw_height, raw_width))
+            if len(filelist) == 0 :  # 选择文件数大于0 进行处理 否则不处理
+                self.log_show('未选择文件')
+                return                
+            else:                
+                # 每次读入一幅图像 即进行处理                
+                for filename in filelist:
+                    raw_data = np.fromfile(filename, dtype=np.uint16)
+                    # 特别注意 reshape X为高 Y为宽 不能弄反
+                    raw_data = np.reshape(raw_data, (raw_height, raw_width))
+                    
+                    # 数据清洗 在范围外的清零 避免影响重心计算
+                    raw_data[raw_data < g_min] = 0
+                    raw_data[raw_data > g_max] = 0
+                    
+                    # 根据选择情况计算重心
+                    if self.radioButton_readDN_max_sel.isChecked():
+                        # 最大值附近求重心                        
+                        max_window_size = self.spinBox_readDN_max_sel_window_size.value()
+                        # 求最大值坐标
+                        Xmax, Ymax = np.where(raw_data==np.max(raw_data))
+                        # 最大值附近区域范围挑选和保护
+                        x_max_start = 0 if (Xmax[0]-max_window_size)<0 else Xmax[0]-max_window_size 
+                        y_max_start = 0 if (Ymax[0]-max_window_size)<0 else Ymax[0]-max_window_size 
+                        x_max_end = (raw_height-1) if (Xmax[0]+max_window_size)>=raw_height else Xmax[0]+max_window_size
+                        y_max_end = (raw_width-1) if (Ymax[0]+max_window_size)>=raw_width else Ymax[0]+max_window_size
+                        # 切片 窗口选取 求重心
+                        img = raw_data[x_max_start:x_max_end+1, y_max_start:y_max_end+1]
+                        xc, yc = self.cal_center_gravity(img)
+                        #重心返回结果为相对值 需转为绝对坐标
+                        xc = xc + x_max_start
+                        yc = yc + y_max_start
+                        
+                    else:  # 手动选择区域求重心
+                        # 读入图像区域窗口
+                        startX = self.spinBox_startX_readdn.value()
+                        startY = self.spinBox_startY_readdn.value()
+                        endX = self.spinBox_endX_readdn.value()
+                        endY = self.spinBox_endY_readdn.value()
+                        # 切片 提取手动选择区域 按S3的行列输入的坐标 用NUMPY计算时需要对调
+                        img = raw_data[startY:endY+1, startX:endX+1]
+                        xc, yc = self.cal_center_gravity(img)
+                        #重心返回结果为相对值 需转为绝对坐标
+                        xc = xc + startY
+                        yc = yc + startX
+                    
+                    # 根据重心以及附近区域计算最值和平均值
+                    x = int(xc)  # 取得重心整数坐标
+                    y = int(yc)
+                    # 范围挑选和保护
+                    x_zone_start = 0 if (x-mean_zone)<0 else x-mean_zone                   
+                    y_zone_start = 0 if (y-mean_zone)<0 else y-mean_zone
+                    x_zone_end = (raw_height-1) if (x+mean_zone)>=raw_height else x+mean_zone
+                    y_zone_end = (raw_width-1)  if (y+mean_zone)>=raw_width  else y+mean_zone
+                    # 重心附近图像切片求最值和均值
+                    tmp_img = raw_data[x_zone_start:x_zone_end, y_zone_start:y_zone_end]
 
-                # 读入图像区域窗口
-                startX = self.spinBox_startX_readdn.value()
-                startY = self.spinBox_startY_readdn.value()
-                endX = self.spinBox_endX_readdn.value()
-                endY = self.spinBox_endY_readdn.value()
-                #读入求重心的最大值和最小值
-                g_max = self.spinBox_gravity_max.value()
-                g_min = self.spinBox_gravity_min.value()
-                                
-                # 获取图像中最大值 最小值和平均值
-                # S3中X和Y 与np的XY正好相反 而np与常识中的行列一致 即X为行 Y为列
-                # 取区域时 为了和S3方向一致 X和Y的位置需要对调
-                max = list()
-                min = list()
-                mean = list()
-                # 存放重心坐标
-                center_gravity_X = list()
-                center_gravity_Y = list()
-                
-                for i, filename in enumerate(filelist):
-                    tmp = raw_data[i, startY:endY+1, startX:endX+1]
-                    max.append(np.max(tmp))
-                    min.append(np.min(tmp))
-                    mean.append(np.mean(tmp))
-                    xc, yc = self.cal_center_gravity(raw_data[i], g_max, g_min)
+                    # 保存最值 平均值 重心坐标
+                    max.append(np.max(tmp_img))
+                    min.append(np.min(tmp_img))
+                    mean.append(np.mean(tmp_img))                    
                     center_gravity_X.append(xc)
                     center_gravity_Y.append(yc)
                 
+                # 所有文件读完 数据保存
                 # 创建dataframe用于输出 pd.Index函数用于生成从1开始的索引 
                 res = pd.DataFrame({'文件名': filelist,
                                     '光斑重心S3-X': center_gravity_Y,
@@ -292,10 +338,8 @@ class Test(QWidget, Ui_Form):
                 outfile = time.strftime('%Y%m%d%H%M%S.csv', time.localtime(time.time()))
                 res.to_csv(outfile, header=True, encoding='gbk')
                 
-                self.log_show('计算结果已输出 文件名为' + outfile)                
-                
-            else:
-                self.log_show('未选择文件')
+                self.log_show('计算结果已输出 文件名为' + outfile)  
+                                
 
         except Exception as e:
             self.log_show('文件打开失败')       
@@ -363,11 +407,7 @@ class Test(QWidget, Ui_Form):
             每个像素所在坐标值乘以DN值 求和后除以全像面图像DN值之和   
             使用meshgird函数生成坐标矩阵 用于元素乘以对应坐标值
     '''
-    def cal_center_gravity(self, img, max, min):
-        # 数据清洗 在范围外的清零 避免影响重心计算
-        img[img < min] = 0
-        img[img > max] = 0
-        
+    def cal_center_gravity(self, img):        
         # 获取宽度和高度 计算坐标矩阵 及矩阵中每个元素坐标值与元素数值一致        
         height, width = img.shape
         x = np.arange(0, width)
