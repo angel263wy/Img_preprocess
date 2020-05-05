@@ -64,6 +64,7 @@ class Test(QWidget, Ui_Form):
                         self.log_show('平均后的图像已输出 位于' + filename)
                     except Exception as ee:
                         self.log_show('未选择输出的文件名 平均后的图像未输出')
+                        self.log_show('异常信息: '+ repr(ee))  
                 else:
                     self.log_show('图像求平均后已缓存，未输出，可以进行后续操作')
 
@@ -72,6 +73,7 @@ class Test(QWidget, Ui_Form):
 
         except Exception as e:
             self.log_show('文件打开失败')
+            self.log_show('异常信息: '+ repr(e))  
 
     # 本底图像处理 打开本底文件后求平均 保存并输出
     def click_open_dark_sig(self):
@@ -106,6 +108,7 @@ class Test(QWidget, Ui_Form):
                         self.log_show('平均后的本底图像已输出 位于' + filename)
                     except Exception as ee:
                         self.log_show('未选择输出的文件名 扣本底后图像未输出')
+                        self.log_show('异常信息: '+ repr(ee))  
                 else:
                     self.log_show('扣本底的图像已缓存，但未输出，可以继续完成其他操作')
 
@@ -114,6 +117,7 @@ class Test(QWidget, Ui_Form):
 
         except Exception as e:
             self.log_show('文件打开失败')
+            self.log_show('异常信息: '+ repr(e))  
 
     # 扣本底函数 
     def click_sub_dark_sig(self):
@@ -137,6 +141,7 @@ class Test(QWidget, Ui_Form):
                     self.log_show('扣本底的图像已输出 位于' + filename)
                 except Exception as ee:
                     self.log_show('未选择输出的文件名 扣本底后图像未输出')
+                    self.log_show('异常信息: '+ repr(ee))  
             else:
                 self.log_show('本底图像的平均值已缓存，但未输出，可以继续完成扣本底操作')
                             
@@ -175,6 +180,7 @@ class Test(QWidget, Ui_Form):
                     self.log_show('帧转移校正图像已输出 位于' + filename)
             except Exception as ee:
                 self.log_show('未选择输出的文件名 帧转移校正的图像未输出')
+                self.log_show('异常信息: '+ repr(ee))  
             
         else:
             self.log_show('未完成扣本底，不能进行帧转移校正')        
@@ -304,15 +310,15 @@ class Test(QWidget, Ui_Form):
                         yc = yc + startX
                     
                     # 根据重心以及附近区域计算最值和平均值
-                    x = int(xc)  # 取得重心整数坐标
-                    y = int(yc)
+                    x = round(xc)  # 取得重心整数坐标 四舍五入
+                    y = round(yc)
                     # 范围挑选和保护
                     x_zone_start = 0 if (x-mean_zone)<0 else x-mean_zone                   
                     y_zone_start = 0 if (y-mean_zone)<0 else y-mean_zone
                     x_zone_end = (raw_height-1) if (x+mean_zone)>=raw_height else x+mean_zone
                     y_zone_end = (raw_width-1)  if (y+mean_zone)>=raw_width  else y+mean_zone
                     # 重心附近图像切片求最值和均值
-                    tmp_img = raw_data[x_zone_start:x_zone_end, y_zone_start:y_zone_end]
+                    tmp_img = raw_data[x_zone_start:x_zone_end+1, y_zone_start:y_zone_end+1]
 
                     # 保存最值 平均值 重心坐标
                     max.append(np.max(tmp_img))
@@ -342,7 +348,8 @@ class Test(QWidget, Ui_Form):
                                 
 
         except Exception as e:
-            self.log_show('文件打开失败')       
+            self.log_show('文件打开失败')  
+            self.log_show('异常信息: '+ repr(e))     
         
             
     '''
