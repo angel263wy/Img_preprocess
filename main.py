@@ -284,13 +284,13 @@ class Test(QWidget, Ui_Form):
                         max_window_size = self.spinBox_readDN_max_sel_window_size.value()
                         # 求最大值坐标
                         Xmax, Ymax = np.where(raw_data==np.max(raw_data))
-                        # 最大值附近区域范围挑选和保护
+                        # 最大值附近区域范围挑选和保护  注意切片左闭右开
                         x_max_start = 0 if (Xmax[0]-max_window_size)<0 else Xmax[0]-max_window_size 
                         y_max_start = 0 if (Ymax[0]-max_window_size)<0 else Ymax[0]-max_window_size 
-                        x_max_end = (raw_height-1) if (Xmax[0]+max_window_size)>=raw_height else Xmax[0]+max_window_size
-                        y_max_end = (raw_width-1) if (Ymax[0]+max_window_size)>=raw_width else Ymax[0]+max_window_size
+                        x_max_end = raw_height if (Xmax[0]+max_window_size)>=raw_height else Xmax[0]+max_window_size+1
+                        y_max_end = raw_width if (Ymax[0]+max_window_size)>=raw_width else Ymax[0]+max_window_size+1
                         # 切片 窗口选取 求重心
-                        img = raw_data[x_max_start:x_max_end+1, y_max_start:y_max_end+1]
+                        img = raw_data[x_max_start:x_max_end, y_max_start:y_max_end]
                         xc, yc = self.cal_center_gravity(img)
                         #重心返回结果为相对值 需转为绝对坐标
                         xc = xc + x_max_start
@@ -310,15 +310,15 @@ class Test(QWidget, Ui_Form):
                         yc = yc + startX
                     
                     # 根据重心以及附近区域计算最值和平均值
-                    x = round(xc)  # 取得重心整数坐标 四舍五入
-                    y = round(yc)
+                    x = int(round(xc))  # 取得重心整数坐标 四舍五入后取整 注round返回小数
+                    y = int(round(yc))
                     # 范围挑选和保护
                     x_zone_start = 0 if (x-mean_zone)<0 else x-mean_zone                   
                     y_zone_start = 0 if (y-mean_zone)<0 else y-mean_zone
-                    x_zone_end = (raw_height-1) if (x+mean_zone)>=raw_height else x+mean_zone
-                    y_zone_end = (raw_width-1)  if (y+mean_zone)>=raw_width  else y+mean_zone
+                    x_zone_end = raw_height if (x+mean_zone)>=raw_height else x+mean_zone+1
+                    y_zone_end = raw_width  if (y+mean_zone)>=raw_width  else y+mean_zone+1
                     # 重心附近图像切片求最值和均值
-                    tmp_img = raw_data[x_zone_start:x_zone_end+1, y_zone_start:y_zone_end+1]
+                    tmp_img = raw_data[x_zone_start:x_zone_end, y_zone_start:y_zone_end]
 
                     # 保存最值 平均值 重心坐标
                     max.append(np.max(tmp_img))
