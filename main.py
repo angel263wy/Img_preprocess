@@ -253,7 +253,11 @@ class Test(QWidget, Ui_Form):
         # 读入平均值的区域
         mean_zone = self.spinBox_readDN_mean_window_size.value()
         
-        # 存放最值和平均值数据
+        # 存放全图最值和坐标
+        whole_img_max = list()
+        whole_img_max_X = list()
+        whole_img_max_Y = list()
+        # 存放区域最值和平均值数据
         max = list()
         min = list()
         mean = list()
@@ -278,12 +282,17 @@ class Test(QWidget, Ui_Form):
                     raw_data[raw_data < g_min] = 0
                     raw_data[raw_data > g_max] = 0
                     
+                    # 计算全图最大值及坐标
+                    whole_img_max.append(np.max(raw_data))                    
+                    Xmax, Ymax= np.where(raw_data==np.max(raw_data))  # 坐标对计算重心也有用
+                    whole_img_max_X.append(Xmax[0])
+                    whole_img_max_Y.append(Ymax[0])
                     # 根据选择情况计算重心
                     if self.radioButton_readDN_max_sel.isChecked():
                         # 最大值附近求重心                        
                         max_window_size = self.spinBox_readDN_max_sel_window_size.value()
                         # 求最大值坐标
-                        Xmax, Ymax = np.where(raw_data==np.max(raw_data))
+                        # Xmax, Ymax = np.where(raw_data==np.max(raw_data))
                         # 最大值附近区域范围挑选和保护  注意切片左闭右开
                         x_max_start = 0 if (Xmax[0]-max_window_size)<0 else Xmax[0]-max_window_size 
                         y_max_start = 0 if (Ymax[0]-max_window_size)<0 else Ymax[0]-max_window_size 
@@ -330,12 +339,19 @@ class Test(QWidget, Ui_Form):
                 # 所有文件读完 数据保存
                 # 创建dataframe用于输出 pd.Index函数用于生成从1开始的索引 
                 res = pd.DataFrame({'文件名': filelist,
+                                    '全图最大值': whole_img_max,
+                                    '全图最大值坐标S3-X': whole_img_max_Y,
+                                    '全图最大值坐标S3-Y': whole_img_max_X,
                                     '光斑重心S3-X': center_gravity_Y,
                                     '光斑重心S3-Y': center_gravity_X,
-                                    '最大值': max,
-                                    '最小值': min,
-                                    '平均值': mean
-                                    }, columns=['文件名','光斑重心S3-X','光斑重心S3-Y', '最大值', '最小值', '平均值'],
+                                    '重心区域最大值': max,
+                                    '重心区域最小值': min,
+                                    '重心区域平均值': mean
+                                    }, columns=['文件名','全图最大值',
+                                                '全图最大值坐标S3-X','全图最大值坐标S3-Y',
+                                                '光斑重心S3-X','光斑重心S3-Y', 
+                                                '重心区域最大值','重心区域最小值', 
+                                                '重心区域平均值'],
                                     index=pd.Index(range(1, len(filelist)+1)))
                                 
                 self.log_show('处理图像 共计' + str(len(filelist)) + '个文件')
