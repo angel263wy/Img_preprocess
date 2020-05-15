@@ -406,8 +406,71 @@ class Test(QWidget, Ui_Form):
             self.raw_file_output(fout, img)
             self.log_show('图像裁剪完成 输出文件 '+ fout)
 
+    def click_snr_open(self):
+        # 读入图像的宽和高
+        raw_width = self.spinBox_img_width.value()
+        raw_height = self.spinBox_img_height.value()
         
+        try:
+            # 读入所有文件数据
+            filelist, filt = QFileDialog.getOpenFileNames(
+                self, filter='raw file(*.raw)', caption='打开图像文件')
+            # 读入文件数量判断
+            if (len(filelist)<2) and self.radioButton_snr_one_channel.isChecked():
+                self.log_show('选择文件数量小于2，不能计算信噪比')
+                return
+            elif (len(filelist)<30) and self.radioButton_snr_all_channel.isChecked():
+                self.log_show('选择文件数量小于30，不能计算信噪比')
+                return
             
+            # 计算单通道信噪比
+            if self.radioButton_snr_one_channel.isChecked():
+                now = time.strftime('%Y%m%d%H%M%S ', time.localtime(time.time()))
+                fout = 'SNR-' + now + '.raw'
+                # 计算信噪比并输出
+                img, img_mean, img_std = self.cal_snr(filelist, raw_width, raw_height)
+                self.raw_file_output(fout, img)
+                self.log_show('信噪比计算完成,输出文件名：' + fout)
+                # 计算信噪比统计信息-最值 并输出
+                fout = 'SNR-' + now + '信噪比统计信息.txt'
+                self.cal_snr_statics(img, img_mean, img_std, fout)
+                self.log_show('信噪比统计信息为：' + fout)
+            # 计算多通道信噪比    
+            else:           
+                # 第一层循环 i表示图像序号 
+                for i in range(1, 16): 
+                    img_file = list()  # 保存该通道的文件名
+                    # 第二层循环 遍历所有文件 找出所有第i个通道的文件
+                    for filename in filelist:  
+                        if filename[-6] == '_' :  # 兼容 _1.raw和 01.raw
+                            keyword = '_' + str(i) + '.raw'
+                        else:
+                            keyword = str(i).zfill(2) + '.raw'
+                                                
+                        if keyword in filename:
+                            img_file.append(filename)
+                    # 第二层循环结束 img_file中存放了所有第i通道的图像地址 计算信噪比
+                    if len(img_file) < 2 :
+                        self.log_show('该通道文件数量小于2，不能计算信噪比')
+                        return
+                    else:
+                        now = time.strftime('%Y%m%d%H%M%S ', time.localtime(time.time()))
+                        fout = 'SNR-CH' + str(i).zfill(2) + '-' + now + '.raw'
+                        # 计算信噪比并输出
+                        img, img_mean, img_std = self.cal_snr(img_file, raw_width, raw_height)
+                        self.raw_file_output(fout, img)
+                        self.log_show('信噪比计算完成,输出文件名：' + fout)
+                        # 计算信噪比统计信息-最值 并输出
+                        fout = 'SNR-CH' + str(i).zfill(2) + '-' + now + '信噪比统计信息.txt'
+                        self.cal_snr_statics(img, img_mean, img_std, fout)
+                        self.log_show('信噪比统计信息为：' + fout)
+        
+        except Exception as e:
+            self.log_show('文件打开失败')
+            self.log_show('异常信息: '+ repr(e)) 
+        
+        
+        
         
 # ----------------内部函数----------------
     # 记录日志函数
@@ -420,6 +483,7 @@ class Test(QWidget, Ui_Form):
     def raw_file_output(self, fname, raw_data):
         with open(fname, 'wb') as f:
             raw_data[raw_data < 0] = 0  # 除去负数
+            raw_data[raw_data > 65535] = 65535  # 除去异常大值
             for i in raw_data.flatten():
                 foo = struct.pack('H', int(i))
                 f.write(foo)
@@ -444,6 +508,52 @@ class Test(QWidget, Ui_Form):
         
         return cenx, ceny
 
+    '''
+    逐点计算信噪比函数
+    输入：文件列表 图像宽和高度
+    算法：每个点平均值除以方差 文件总数小于2则输出全零图像
+    输出：信噪比数据 平均值数据 标准差数据 numpy数组 一维数组 长度为宽×高
+    '''
+    def cal_snr(self, filelist, width, height):        
+        raw_data = np.empty([len(filelist), width*height], dtype=np.uint16)  
+        
+        for i, filename in enumerate(filelist):
+            raw_data[i] = np.fromfile(filename, dtype=np.uint16)
+        # 逐点求平均
+        raw_mean = np.mean(raw_data, axis=0)
+        # 求标准差 ddof=0表示对总体计算 不是抽样样本计算
+        raw_std = np.std(raw_data, axis=0, ddof=0)
+        raw_std[raw_std == 0 ] = 0.0001  # 标准差为0 避免信噪比无穷大
+        # 计算信噪比 当标准差为0时 认为信噪比无穷大 用65535表示
+        raw_data = raw_mean / raw_std      
+        raw_data[raw_data > 9999] == 65535                 
+        return raw_data, raw_mean, raw_std
+    
+    
+    '''
+    信噪比统计函数
+    输入:信噪比文件--计算最大信噪比
+        平均值文件--计算最大和最小均值
+        标准差文件--计算最大和最小标准差
+        fout--输出的文件名
+    输出:无
+    '''
+    def cal_snr_statics(self, img, mean, std, fout):
+        img_mean_max = np.max(mean)
+        img_mean_min = np.min(mean)
+        img_std_max = np.max(std)
+        img_std_min = np.min(std)
+        img_snr_max = np.max(img)
+                
+        with open(fout, 'w+') as f:
+            f.write('信噪比最大值: ' + str(img_snr_max) + '\n' )
+            f.write('均值最大值: ' + str(img_mean_max) + '\n' )
+            f.write('均值最小值: ' + str(img_mean_min) + '\n' )
+            f.write('标准差最大值: ' + str(img_std_max) + '\n' )
+            f.write('标准差最小值: ' + str(img_std_min) + '\n' )
+            
+
+    
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
