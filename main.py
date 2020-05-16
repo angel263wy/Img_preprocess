@@ -419,8 +419,8 @@ class Test(QWidget, Ui_Form):
             if (len(filelist)<2) and self.radioButton_snr_one_channel.isChecked():
                 self.log_show('选择文件数量小于2，不能计算信噪比')
                 return
-            elif (len(filelist)<30) and self.radioButton_snr_all_channel.isChecked():
-                self.log_show('选择文件数量小于30，不能计算信噪比')
+            elif (len(filelist)<45) and self.radioButton_snr_all_channel.isChecked():
+                self.log_show('选择文件数量小于45，不能计算信噪比')
                 return
             
             # 计算单通道信噪比
@@ -432,36 +432,36 @@ class Test(QWidget, Ui_Form):
                 self.raw_file_output(fout, img)
                 self.log_show('信噪比计算完成,输出文件名：' + fout)
                 # 计算信噪比统计信息-最值 并输出
-                fout = 'SNR-' + now + '信噪比统计信息.txt'
+                fout = 'SNR-' + now + '信噪比统计信息.csv'
                 self.cal_snr_statics(img, img_mean, img_std, fout)
                 self.log_show('信噪比统计信息为：' + fout)
             # 计算多通道信噪比    
             else:           
-                # 第一层循环 i表示图像序号 
-                for i in range(1, 16): 
+                # 第一层循环 ch_cnt表示图像序号 
+                for ch_cnt in range(1, 16): 
                     img_file = list()  # 保存该通道的文件名
                     # 第二层循环 遍历所有文件 找出所有第i个通道的文件
                     for filename in filelist:  
                         if filename[-6] == '_' :  # 兼容 _1.raw和 01.raw
-                            keyword = '_' + str(i) + '.raw'
+                            keyword = '_' + str(ch_cnt) + '.raw'
                         else:
-                            keyword = str(i).zfill(2) + '.raw'
+                            keyword = str(ch_cnt).zfill(2) + '.raw'
                                                 
                         if keyword in filename:
                             img_file.append(filename)
-                    # 第二层循环结束 img_file中存放了所有第i通道的图像地址 计算信噪比
-                    if len(img_file) < 2 :
-                        self.log_show('该通道文件数量小于2，不能计算信噪比')
-                        return
+                    # 第二层循环结束 img_file中存放了所有第ch_cnt通道的图像地址 计算信噪比
+                    if len(img_file) < 3 :
+                        self.log_show('通道' + str(ch_cnt)+'文件数量小于3，不能计算信噪比')
+                        continue
                     else:
                         now = time.strftime('%Y%m%d%H%M%S ', time.localtime(time.time()))
-                        fout = 'SNR-CH' + str(i).zfill(2) + '-' + now + '.raw'
+                        fout = 'SNR-CH' + str(ch_cnt).zfill(2) + '-' + now + '.raw'
                         # 计算信噪比并输出
                         img, img_mean, img_std = self.cal_snr(img_file, raw_width, raw_height)
                         self.raw_file_output(fout, img)
                         self.log_show('信噪比计算完成,输出文件名：' + fout)
                         # 计算信噪比统计信息-最值 并输出
-                        fout = 'SNR-CH' + str(i).zfill(2) + '-' + now + '信噪比统计信息.txt'
+                        fout = 'SNR-CH' + str(ch_cnt).zfill(2) + '-' + now + '信噪比统计信息.txt'
                         self.cal_snr_statics(img, img_mean, img_std, fout)
                         self.log_show('信噪比统计信息为：' + fout)
         
@@ -544,13 +544,24 @@ class Test(QWidget, Ui_Form):
         img_std_max = np.max(std)
         img_std_min = np.min(std)
         img_snr_max = np.max(img)
-                
-        with open(fout, 'w+') as f:
-            f.write('信噪比最大值: ' + str(img_snr_max) + '\n' )
-            f.write('均值最大值: ' + str(img_mean_max) + '\n' )
-            f.write('均值最小值: ' + str(img_mean_min) + '\n' )
-            f.write('标准差最大值: ' + str(img_std_max) + '\n' )
-            f.write('标准差最小值: ' + str(img_std_min) + '\n' )
+        
+        try:  # 判断文件是否存在
+            f = open(fout, 'r')
+            f.close()
+        except FileNotFoundError:  # 没有找到文件 新建文件头
+            with open(fout, 'w') as f:
+                f.write('信噪比最大值,')
+                f.write('均值最大值,')
+                f.write('均值最小值,')
+                f.write('标准差最大值,')
+                f.write('标准差最小值\n')
+        finally:  # 无论有没有新文件 都要将数据写入文件                    
+            with open(fout, 'a+') as f:
+                f.write(str(img_snr_max) + ',' )
+                f.write(str(img_mean_max) + ',' )
+                f.write(str(img_mean_min) + ',' )
+                f.write(str(img_std_max) + ',' )
+                f.write(str(img_std_min) + '\n')
             
 
     
