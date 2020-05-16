@@ -703,7 +703,7 @@
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>130</y>
+       <y>100</y>
        <width>331</width>
        <height>141</height>
       </rect>
@@ -727,8 +727,8 @@ p, li { white-space: pre-wrap; }
     <widget class="QPushButton" name="pushButton_snr_open">
      <property name="geometry">
       <rect>
-       <x>50</x>
-       <y>290</y>
+       <x>60</x>
+       <y>260</y>
        <width>91</width>
        <height>23</height>
       </rect>

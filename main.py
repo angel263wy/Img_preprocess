@@ -436,34 +436,36 @@ class Test(QWidget, Ui_Form):
                 self.cal_snr_statics(img, img_mean, img_std, fout)
                 self.log_show('信噪比统计信息为：' + fout)
             # 计算多通道信噪比    
-            else:           
+            else:       
+                # 记录当前时间 用作文件名
+                now = time.strftime('%Y%m%d%H%M%S ', time.localtime(time.time()))    
                 # 第一层循环 ch_cnt表示图像序号 
                 for ch_cnt in range(1, 16): 
                     img_file = list()  # 保存该通道的文件名
                     # 第二层循环 遍历所有文件 找出所有第i个通道的文件
                     for filename in filelist:  
+                        # 生成含有该通道关键字的keyword 判断文件名是否含有该关键字
                         if filename[-6] == '_' :  # 兼容 _1.raw和 01.raw
                             keyword = '_' + str(ch_cnt) + '.raw'
                         else:
                             keyword = str(ch_cnt).zfill(2) + '.raw'
-                                                
+                        # 该文件名数据该通道 则加入文件名列表                        
                         if keyword in filename:
                             img_file.append(filename)
                     # 第二层循环结束 img_file中存放了所有第ch_cnt通道的图像地址 计算信噪比
                     if len(img_file) < 3 :
                         self.log_show('通道' + str(ch_cnt)+'文件数量小于3，不能计算信噪比')
                         continue
-                    else:
-                        now = time.strftime('%Y%m%d%H%M%S ', time.localtime(time.time()))
+                    else:                        
                         fout = 'SNR-CH' + str(ch_cnt).zfill(2) + '-' + now + '.raw'
                         # 计算信噪比并输出
                         img, img_mean, img_std = self.cal_snr(img_file, raw_width, raw_height)
                         self.raw_file_output(fout, img)
                         self.log_show('信噪比计算完成,输出文件名：' + fout)
                         # 计算信噪比统计信息-最值 并输出
-                        fout = 'SNR-CH' + str(ch_cnt).zfill(2) + '-' + now + '信噪比统计信息.txt'
-                        self.cal_snr_statics(img, img_mean, img_std, fout)
-                        self.log_show('信噪比统计信息为：' + fout)
+                        fout = 'SNR-CH01-15-' + now + '信噪比统计信息.csv'
+                        self.cal_snr_statics(img, img_mean, img_std, fout, str(ch_cnt))
+                        # self.log_show('信噪比统计信息为：' + fout)
         
         except Exception as e:
             self.log_show('文件打开失败')
@@ -538,7 +540,7 @@ class Test(QWidget, Ui_Form):
         fout--输出的文件名
     输出:无
     '''
-    def cal_snr_statics(self, img, mean, std, fout):
+    def cal_snr_statics(self, img, mean, std, fout, ch_str='None'):
         img_mean_max = np.max(mean)
         img_mean_min = np.min(mean)
         img_std_max = np.max(std)
@@ -550,6 +552,7 @@ class Test(QWidget, Ui_Form):
             f.close()
         except FileNotFoundError:  # 没有找到文件 新建文件头
             with open(fout, 'w') as f:
+                f.write('通道编号,')
                 f.write('信噪比最大值,')
                 f.write('均值最大值,')
                 f.write('均值最小值,')
@@ -557,6 +560,7 @@ class Test(QWidget, Ui_Form):
                 f.write('标准差最小值\n')
         finally:  # 无论有没有新文件 都要将数据写入文件                    
             with open(fout, 'a+') as f:
+                f.write(ch_str + ',')
                 f.write(str(img_snr_max) + ',' )
                 f.write(str(img_mean_max) + ',' )
                 f.write(str(img_mean_min) + ',' )
