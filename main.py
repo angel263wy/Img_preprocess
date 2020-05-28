@@ -14,6 +14,13 @@ import struct
 import numpy as np
 import pandas as pd
 import queue
+import matplotlib.pyplot as plt
+
+
+import matplotlib as mpl
+mpl.rcParams['font.sans-serif'] = ['SimHei']
+mpl.rcParams['font.serif'] = ['SimHei']
+mpl.rcParams['axes.unicode_minus'] = False 
 
 
 class Test(QWidget, Ui_Form):
@@ -405,7 +412,12 @@ class Test(QWidget, Ui_Form):
             fout = filename[:-4] + '_cut_size_'+str(cut_size)+'X'+str(cut_size)+'.raw'
             self.raw_file_output(fout, img)
             self.log_show('图像裁剪完成 输出文件 '+ fout)
-
+    
+    
+    '''
+    信噪比功能
+    按照页面使用说明操作
+    '''
     def click_snr_open(self):
         # 读入图像的宽和高
         raw_width = self.spinBox_img_width.value()
@@ -470,6 +482,51 @@ class Test(QWidget, Ui_Form):
         except Exception as e:
             self.log_show('文件打开失败')
             self.log_show('异常信息: '+ repr(e)) 
+        
+    
+    '''
+    计算噪声函数
+    选择多幅图像 逐点计算标准差 统计标准差分布后绘图并保存曲线
+    '''    
+    def click_noise_std_open(self):
+        # 读入图像的宽和高
+        raw_width = self.spinBox_img_width.value()
+        raw_height = self.spinBox_img_height.value()
+        
+        try:
+            # 读入所有文件数据
+            filelist, filt = QFileDialog.getOpenFileNames(
+                self, filter='raw file(*.raw)', caption='打开图像文件')        
+            # 读入文件数量判断
+            if len(filelist) < 2:
+                self.log_show('选择文件数量小于2，不能计算信噪比')
+                return            
+            # 读入文件 生成数组
+            raw_data = np.empty([len(filelist), raw_height*raw_width], dtype=np.uint16)
+            for i, filename in enumerate(filelist):
+                raw_data[i] = np.fromfile(filename, dtype=np.uint16)
+            
+            # 计算标准差 为提高精度 标准差乘以10后转整数    
+            raw_std = np.std(raw_data, axis=0, ddof=0) * 10
+            raw_std = raw_std.astype(np.int32)
+            hist = np.bincount(raw_std)
+            plt.figure()
+            plt.plot(hist)            
+            plt.title('图像灰度标准差分布图(除以10为实际值)')
+            plt.show()
+            plt.close() 
+            
+            # 输出直方图曲线的文件
+            now = time.strftime('%Y%m%d%H%M%S ', time.localtime(time.time()))
+            fout = 'histogram-std-' + now + '.csv'            
+            np.savetxt(fout, hist, fmt = '%d', delimiter=',', header='直方图', comments='')
+            
+            self.log_show('完成' + str(len(filelist)) + '个文件标准差计算')
+            self.log_show('输出直方图数据文件' + fout)        
+        
+        except Exception as e:
+            self.log_show('文件打开失败')
+            self.log_show('异常信息: '+ repr(e))    
         
         
         

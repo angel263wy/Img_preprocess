@@ -245,13 +245,13 @@ class Ui_Form(object):
         self.tab_3 = QtWidgets.QWidget()
         self.tab_3.setObjectName("tab_3")
         self.textBrowser = QtWidgets.QTextBrowser(self.tab_3)
-        self.textBrowser.setGeometry(QtCore.QRect(10, 100, 331, 141))
+        self.textBrowser.setGeometry(QtCore.QRect(10, 100, 331, 151))
         self.textBrowser.setObjectName("textBrowser")
         self.pushButton_snr_open = QtWidgets.QPushButton(self.tab_3)
-        self.pushButton_snr_open.setGeometry(QtCore.QRect(60, 260, 91, 23))
+        self.pushButton_snr_open.setGeometry(QtCore.QRect(180, 60, 91, 23))
         self.pushButton_snr_open.setObjectName("pushButton_snr_open")
         self.layoutWidget3 = QtWidgets.QWidget(self.tab_3)
-        self.layoutWidget3.setGeometry(QtCore.QRect(170, 40, 109, 40))
+        self.layoutWidget3.setGeometry(QtCore.QRect(170, 10, 109, 40))
         self.layoutWidget3.setObjectName("layoutWidget3")
         self.verticalLayout = QtWidgets.QVBoxLayout(self.layoutWidget3)
         self.verticalLayout.setContentsMargins(0, 0, 0, 0)
@@ -264,6 +264,9 @@ class Ui_Form(object):
         self.radioButton_snr_all_channel.setChecked(True)
         self.radioButton_snr_all_channel.setObjectName("radioButton_snr_all_channel")
         self.verticalLayout.addWidget(self.radioButton_snr_all_channel)
+        self.pushButton_noise_std_open = QtWidgets.QPushButton(self.tab_3)
+        self.pushButton_noise_std_open.setGeometry(QtCore.QRect(20, 270, 91, 23))
+        self.pushButton_noise_std_open.setObjectName("pushButton_noise_std_open")
         self.tabWidget.addTab(self.tab_3, "")
         self.pushButton_log_clear = QtWidgets.QPushButton(Form)
         self.pushButton_log_clear.setGeometry(QtCore.QRect(280, 320, 75, 23))
@@ -310,6 +313,7 @@ class Ui_Form(object):
         self.pushButton_1M30dis_smear.clicked.connect(Form.click_1M30dis_smear)
         self.pushButton_img_cut.clicked.connect(Form.click_img_cut)
         self.pushButton_snr_open.clicked.connect(Form.click_snr_open)
+        self.pushButton_noise_std_open.clicked.connect(Form.click_noise_std_open)
         QtCore.QMetaObject.connectSlotsByName(Form)
         Form.setTabOrder(self.spinBox_img_width, self.spinBox_img_height)
         Form.setTabOrder(self.spinBox_img_height, self.spinBox_gravity_min)
@@ -375,7 +379,7 @@ class Ui_Form(object):
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
 "</style></head><body style=\" font-family:\'SimSun\'; font-size:9pt; font-weight:400; font-style:normal;\">\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt; font-weight:600;\">使用说明：</span></p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt; font-weight:600;\">信噪比计算使用说明：</span></p>\n"
 "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p>\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">1、单通道图像计算时，所选文件全部参与计算，不分通道</p>\n"
 "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p>\n"
@@ -384,9 +388,10 @@ class Ui_Form(object):
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">3、多通道图像计算时，文件名兼容 _1.raw和 01.raw</p>\n"
 "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p>\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">4、当标准差为0时，信噪比人工设置为65535</p></body></html>"))
-        self.pushButton_snr_open.setText(_translate("Form", "打开图像文件"))
+        self.pushButton_snr_open.setText(_translate("Form", "信噪比计算"))
         self.radioButton_snr_one_channel.setText(_translate("Form", "单通道图像计算"))
         self.radioButton_snr_all_channel.setText(_translate("Form", "多通道图像计算"))
+        self.pushButton_noise_std_open.setText(_translate("Form", "噪声计算统计"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_3), _translate("Form", "信噪比计算"))
         self.pushButton_log_clear.setText(_translate("Form", "清空"))
         self.label.setText(_translate("Form", "图像宽度"))
