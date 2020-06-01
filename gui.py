@@ -245,7 +245,7 @@ class Ui_Form(object):
         self.tab_3 = QtWidgets.QWidget()
         self.tab_3.setObjectName("tab_3")
         self.textBrowser = QtWidgets.QTextBrowser(self.tab_3)
-        self.textBrowser.setGeometry(QtCore.QRect(10, 100, 331, 151))
+        self.textBrowser.setGeometry(QtCore.QRect(10, 100, 331, 171))
         self.textBrowser.setObjectName("textBrowser")
         self.pushButton_snr_open = QtWidgets.QPushButton(self.tab_3)
         self.pushButton_snr_open.setGeometry(QtCore.QRect(180, 60, 91, 23))
@@ -265,7 +265,7 @@ class Ui_Form(object):
         self.radioButton_snr_all_channel.setObjectName("radioButton_snr_all_channel")
         self.verticalLayout.addWidget(self.radioButton_snr_all_channel)
         self.pushButton_noise_std_open = QtWidgets.QPushButton(self.tab_3)
-        self.pushButton_noise_std_open.setGeometry(QtCore.QRect(20, 270, 91, 23))
+        self.pushButton_noise_std_open.setGeometry(QtCore.QRect(20, 290, 91, 23))
         self.pushButton_noise_std_open.setObjectName("pushButton_noise_std_open")
         self.tabWidget.addTab(self.tab_3, "")
         self.pushButton_log_clear = QtWidgets.QPushButton(Form)
@@ -387,7 +387,9 @@ class Ui_Form(object):
 "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p>\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">3、多通道图像计算时，文件名兼容 _1.raw和 01.raw</p>\n"
 "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p>\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">4、当标准差为0时，信噪比人工设置为65535</p></body></html>"))
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">4、当标准差为0时，信噪比人工设置为65535</p>\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">信噪比计算统计:选择目录时选到RAW_ImageData上一层</p></body></html>"))
         self.pushButton_snr_open.setText(_translate("Form", "信噪比计算"))
         self.radioButton_snr_one_channel.setText(_translate("Form", "单通道图像计算"))
         self.radioButton_snr_all_channel.setText(_translate("Form", "多通道图像计算"))

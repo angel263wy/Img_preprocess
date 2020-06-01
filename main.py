@@ -13,8 +13,10 @@ import time
 import struct
 import numpy as np
 import pandas as pd
-import queue
+import glob
 import matplotlib.pyplot as plt
+
+
 
 
 import matplotlib as mpl
@@ -491,13 +493,24 @@ class Test(QWidget, Ui_Form):
     def click_noise_std_open(self):
         # 读入图像的宽和高
         raw_width = self.spinBox_img_width.value()
-        raw_height = self.spinBox_img_height.value()
-        
+        raw_height = self.spinBox_img_height.value()       
+                
         try:
             # 读入所有文件数据
-            filelist, filt = QFileDialog.getOpenFileNames(
-                self, filter='raw file(*.raw)', caption='打开图像文件')        
-            # 读入文件数量判断
+            raw_dirs = QFileDialog.getExistingDirectory(self, caption='选择文件夹')
+            filelist = glob.glob(raw_dirs + '\\RAW_ImageData\\*.raw')
+            # 未找到文件 转手动选择
+            if len(filelist) == 0 :                 
+                res = QMessageBox.question(self, '请选择', '未找到RAW文件 是否手动选文件?')
+                if res == QMessageBox.No:
+                    self.log_show('未进行数据处理')
+                    return
+                else:                
+                    raw_dirs = 'histogram'  # 改名用于csv文件中表头 不代表目录
+                    filelist, filt = QFileDialog.getOpenFileNames(
+                        self, filter='raw file(*.raw)', caption='打开图像文件')        
+            
+            # 统一读入文件数量判断 无论是选文件夹方式还是手选方式
             if len(filelist) < 2:
                 self.log_show('选择文件数量小于2，不能计算信噪比')
                 return            
@@ -519,7 +532,7 @@ class Test(QWidget, Ui_Form):
             # 输出直方图曲线的文件
             now = time.strftime('%Y%m%d%H%M%S ', time.localtime(time.time()))
             fout = 'histogram-std-' + now + '.csv'            
-            np.savetxt(fout, hist, fmt = '%d', delimiter=',', header='直方图', comments='')
+            np.savetxt(fout, hist, fmt = '%d', delimiter=',', header=raw_dirs, comments='')
             
             self.log_show('完成' + str(len(filelist)) + '个文件标准差计算')
             self.log_show('输出直方图数据文件' + fout)        
