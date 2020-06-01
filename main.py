@@ -534,6 +534,14 @@ class Test(QWidget, Ui_Form):
             fout = 'histogram-std-' + now + '.csv'            
             np.savetxt(fout, hist, fmt = '%d', delimiter=',', header=raw_dirs, comments='')
             
+            # 输出直方图统计信息 最大值、位置及半高宽
+            hist_max, hist_max_pos, hist_fwhm = self.cal_FWHM(hist)
+            hist_stat = ',最大值,' + str(hist_max) + ',最大值位置,' + str(hist_max_pos) + ',半高宽' + str(hist_fwhm)
+            # 输出            
+            with open(fout, 'a') as f:
+                f.write(hist_stat)
+
+            
             self.log_show('完成' + str(len(filelist)) + '个文件标准差计算')
             self.log_show('输出直方图数据文件' + fout)        
         
@@ -637,6 +645,22 @@ class Test(QWidget, Ui_Form):
                 f.write(str(img_std_max) + ',' )
                 f.write(str(img_std_min) + '\n')
             
+    '''
+    噪声统计函数
+    输入：直方图数组
+    算法：半高宽：找数组最大值，除以2，统计数组中所有大于半个最大值的个数
+    输出：最大值 最大值位置 半高宽
+    '''
+    def cal_FWHM(self, hist_array):
+        # 求最大值位置   
+        hist_max_pos = np.where(hist_array == np.max(hist_array))
+        # 求半高宽
+        hist_max = np.max(hist_array)
+        fwhm = len(hist_array[hist_array > (hist_max/2)])  # 布尔索引 x[x>1]返回数组x中所有大于1的数 求长度即可
+        
+        return hist_max, hist_max_pos[0][0], fwhm  # hist_max_pos为元组  hist_max_pos[0]表示该元组第一个数组 hist_max_pos[0][0]为第一个元素
+        
+
 
     
 
