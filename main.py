@@ -536,7 +536,7 @@ class Test(QWidget, Ui_Form):
             
             # 输出直方图统计信息 最大值、位置及半高宽  用\表示换行
             hist_max, hist_max_pos, hist_fwhm = self.cal_FWHM(hist)
-            hist_stat = ',最大值,' + str(hist_max) + ',最大值位置,'\
+            hist_stat = ',曲线峰值,' + str(hist_max) + ',峰值对应标准差,'\
                         + str(hist_max_pos) + ',半高宽,' + str(hist_fwhm)\
                         + ',直方图长度,' + str(len(hist))
             # 输出            
