@@ -534,9 +534,11 @@ class Test(QWidget, Ui_Form):
             fout = 'histogram-std-' + now + '.csv'            
             np.savetxt(fout, hist, fmt = '%d', delimiter=',', header=raw_dirs, comments='')
             
-            # 输出直方图统计信息 最大值、位置及半高宽
+            # 输出直方图统计信息 最大值、位置及半高宽  用\表示换行
             hist_max, hist_max_pos, hist_fwhm = self.cal_FWHM(hist)
-            hist_stat = ',最大值,' + str(hist_max) + ',最大值位置,' + str(hist_max_pos) + ',半高宽' + str(hist_fwhm)
+            hist_stat = ',最大值,' + str(hist_max) + ',最大值位置,'\
+                        + str(hist_max_pos) + ',半高宽,' + str(hist_fwhm)\
+                        + ',直方图长度,' + str(len(hist))
             # 输出            
             with open(fout, 'a') as f:
                 f.write(hist_stat)
@@ -653,12 +655,12 @@ class Test(QWidget, Ui_Form):
     '''
     def cal_FWHM(self, hist_array):
         # 求最大值位置   
-        hist_max_pos = np.where(hist_array == np.max(hist_array))
+        hist_max_pos = np.argmax(hist_array)  # 最大值对应的索引
         # 求半高宽
         hist_max = np.max(hist_array)
         fwhm = len(hist_array[hist_array > (hist_max/2)])  # 布尔索引 x[x>1]返回数组x中所有大于1的数 求长度即可
         
-        return hist_max, hist_max_pos[0][0], fwhm  # hist_max_pos为元组  hist_max_pos[0]表示该元组第一个数组 hist_max_pos[0][0]为第一个元素
+        return hist_max, hist_max_pos, fwhm  
         
 
 
