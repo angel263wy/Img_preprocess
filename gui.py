@@ -11,12 +11,12 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_Form(object):
     def setupUi(self, Form):
         Form.setObjectName("Form")
-        Form.resize(380, 468)
+        Form.resize(440, 468)
         self.textEdit_log = QtWidgets.QTextEdit(Form)
-        self.textEdit_log.setGeometry(QtCore.QRect(10, 360, 361, 91))
+        self.textEdit_log.setGeometry(QtCore.QRect(10, 360, 411, 91))
         self.textEdit_log.setObjectName("textEdit_log")
         self.tabWidget = QtWidgets.QTabWidget(Form)
-        self.tabWidget.setGeometry(QtCore.QRect(10, 10, 351, 341))
+        self.tabWidget.setGeometry(QtCore.QRect(10, 10, 411, 341))
         self.tabWidget.setObjectName("tabWidget")
         self.tab = QtWidgets.QWidget()
         self.tab.setObjectName("tab")
@@ -245,13 +245,13 @@ class Ui_Form(object):
         self.tab_3 = QtWidgets.QWidget()
         self.tab_3.setObjectName("tab_3")
         self.textBrowser = QtWidgets.QTextBrowser(self.tab_3)
-        self.textBrowser.setGeometry(QtCore.QRect(10, 100, 331, 171))
+        self.textBrowser.setGeometry(QtCore.QRect(10, 100, 381, 171))
         self.textBrowser.setObjectName("textBrowser")
         self.pushButton_snr_open = QtWidgets.QPushButton(self.tab_3)
-        self.pushButton_snr_open.setGeometry(QtCore.QRect(180, 60, 91, 23))
+        self.pushButton_snr_open.setGeometry(QtCore.QRect(300, 60, 91, 23))
         self.pushButton_snr_open.setObjectName("pushButton_snr_open")
         self.layoutWidget3 = QtWidgets.QWidget(self.tab_3)
-        self.layoutWidget3.setGeometry(QtCore.QRect(170, 10, 109, 40))
+        self.layoutWidget3.setGeometry(QtCore.QRect(170, 40, 109, 40))
         self.layoutWidget3.setObjectName("layoutWidget3")
         self.verticalLayout = QtWidgets.QVBoxLayout(self.layoutWidget3)
         self.verticalLayout.setContentsMargins(0, 0, 0, 0)
@@ -268,8 +268,46 @@ class Ui_Form(object):
         self.pushButton_noise_std_open.setGeometry(QtCore.QRect(20, 290, 91, 23))
         self.pushButton_noise_std_open.setObjectName("pushButton_noise_std_open")
         self.tabWidget.addTab(self.tab_3, "")
+        self.tab_4 = QtWidgets.QWidget()
+        self.tab_4.setObjectName("tab_4")
+        self.pushButton_multiView_open = QtWidgets.QPushButton(self.tab_4)
+        self.pushButton_multiView_open.setGeometry(QtCore.QRect(160, 290, 91, 23))
+        self.pushButton_multiView_open.setObjectName("pushButton_multiView_open")
+        self.textEdit = QtWidgets.QTextEdit(self.tab_4)
+        self.textEdit.setGeometry(QtCore.QRect(10, 100, 371, 171))
+        self.textEdit.setObjectName("textEdit")
+        self.widget = QtWidgets.QWidget(self.tab_4)
+        self.widget.setGeometry(QtCore.QRect(160, 30, 171, 22))
+        self.widget.setObjectName("widget")
+        self.horizontalLayout_10 = QtWidgets.QHBoxLayout(self.widget)
+        self.horizontalLayout_10.setContentsMargins(0, 0, 0, 0)
+        self.horizontalLayout_10.setObjectName("horizontalLayout_10")
+        self.label_18 = QtWidgets.QLabel(self.widget)
+        self.label_18.setObjectName("label_18")
+        self.horizontalLayout_10.addWidget(self.label_18)
+        self.spinBox_multiView_threhold = QtWidgets.QSpinBox(self.widget)
+        self.spinBox_multiView_threhold.setMaximum(65535)
+        self.spinBox_multiView_threhold.setProperty("value", 6000)
+        self.spinBox_multiView_threhold.setObjectName("spinBox_multiView_threhold")
+        self.horizontalLayout_10.addWidget(self.spinBox_multiView_threhold)
+        self.widget1 = QtWidgets.QWidget(self.tab_4)
+        self.widget1.setGeometry(QtCore.QRect(160, 60, 171, 22))
+        self.widget1.setObjectName("widget1")
+        self.horizontalLayout_11 = QtWidgets.QHBoxLayout(self.widget1)
+        self.horizontalLayout_11.setContentsMargins(0, 0, 0, 0)
+        self.horizontalLayout_11.setObjectName("horizontalLayout_11")
+        self.label_19 = QtWidgets.QLabel(self.widget1)
+        self.label_19.setObjectName("label_19")
+        self.horizontalLayout_11.addWidget(self.label_19)
+        self.spinBox_mutilView_img_cnt = QtWidgets.QSpinBox(self.widget1)
+        self.spinBox_mutilView_img_cnt.setMinimum(1)
+        self.spinBox_mutilView_img_cnt.setMaximum(9999)
+        self.spinBox_mutilView_img_cnt.setProperty("value", 15)
+        self.spinBox_mutilView_img_cnt.setObjectName("spinBox_mutilView_img_cnt")
+        self.horizontalLayout_11.addWidget(self.spinBox_mutilView_img_cnt)
+        self.tabWidget.addTab(self.tab_4, "")
         self.pushButton_log_clear = QtWidgets.QPushButton(Form)
-        self.pushButton_log_clear.setGeometry(QtCore.QRect(280, 320, 75, 23))
+        self.pushButton_log_clear.setGeometry(QtCore.QRect(340, 320, 75, 23))
         self.pushButton_log_clear.setObjectName("pushButton_log_clear")
         self.layoutWidget4 = QtWidgets.QWidget(Form)
         self.layoutWidget4.setGeometry(QtCore.QRect(20, 60, 108, 22))
@@ -303,7 +341,7 @@ class Ui_Form(object):
         self.horizontalLayout_2.addWidget(self.spinBox_img_height)
 
         self.retranslateUi(Form)
-        self.tabWidget.setCurrentIndex(2)
+        self.tabWidget.setCurrentIndex(3)
         self.pushButton_log_clear.clicked.connect(Form.click_log_clear)
         self.pushButton_openIMG_sig.clicked.connect(Form.click_openIMG_sig)
         self.pushButton_open_dark_sig.clicked.connect(Form.click_open_dark_sig)
@@ -314,6 +352,7 @@ class Ui_Form(object):
         self.pushButton_img_cut.clicked.connect(Form.click_img_cut)
         self.pushButton_snr_open.clicked.connect(Form.click_snr_open)
         self.pushButton_noise_std_open.clicked.connect(Form.click_noise_std_open)
+        self.pushButton_multiView_open.clicked.connect(Form.click_multiView_open)
         QtCore.QMetaObject.connectSlotsByName(Form)
         Form.setTabOrder(self.spinBox_img_width, self.spinBox_img_height)
         Form.setTabOrder(self.spinBox_img_height, self.spinBox_gravity_min)
@@ -389,12 +428,31 @@ class Ui_Form(object):
 "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p>\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">4、当标准差为0时，信噪比人工设置为65535</p>\n"
 "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p>\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">信噪比计算统计:选择目录时选到RAW_ImageData上一层</p></body></html>"))
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">噪声计算统计:选择目录时选到RAW_ImageData上一层</p></body></html>"))
         self.pushButton_snr_open.setText(_translate("Form", "信噪比计算"))
         self.radioButton_snr_one_channel.setText(_translate("Form", "单通道图像计算"))
         self.radioButton_snr_all_channel.setText(_translate("Form", "多通道图像计算"))
         self.pushButton_noise_std_open.setText(_translate("Form", "噪声计算统计"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_3), _translate("Form", "信噪比计算"))
+        self.pushButton_multiView_open.setText(_translate("Form", "导入图像数据"))
+        self.textEdit.setHtml(_translate("Form", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'SimSun\'; font-size:9pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-weight:600;\">多视场拼图使用说明：</span></p>\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">1.图像文件数量判断， 不是同一视场图像整数倍的文件不处理</p>\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">2.图像二值化，大于阈值的保持不变，小于阈值的设置为0</p>\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">3.所有图像对应像元相加，除以同一视场图像数量</p>\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">4.图像光斑有重合的地方灰度值会异常大，更改为阈值的一半</p>\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">5.RAW文件输出</p></body></html>"))
+        self.label_18.setText(_translate("Form", "二值化阈值  "))
+        self.label_19.setText(_translate("Form", "同一视场图像数量"))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_4), _translate("Form", "多视场拼图"))
         self.pushButton_log_clear.setText(_translate("Form", "清空"))
         self.label.setText(_translate("Form", "图像宽度"))
         self.label_2.setText(_translate("Form", "图像高度"))

@@ -550,8 +550,59 @@ class Test(QWidget, Ui_Form):
         except Exception as e:
             self.log_show('文件打开失败')
             self.log_show('异常信息: '+ repr(e))    
+    
+    '''
+    多视场拼图软件
+    导入图片 二值化处理 对应像元“求平均” 重合像元处理 文件输出
+    文件求平均，为保证灰度值不溢出 先除以1000 算法完成后再还原
+    方法详见界面说明
+    '''
+    def click_multiView_open(self):
+        raw_width = self.spinBox_img_width.value()
+        raw_height = self.spinBox_img_height.value() 
+        dn_threhold = self.spinBox_multiView_threhold.value()
+        img_cnt = self.spinBox_mutilView_img_cnt.value()
+        
+        try:
+            # 读入所有文件数据
+            filelist, filt = QFileDialog.getOpenFileNames(
+                self, filter='raw file(*.raw)', caption='打开图像文件')    
+            
+            # 文件数量判断
+            if len(filelist) == 0 :
+                self.log_show('未选择文件')
+                return
+            elif (len(filelist) % img_cnt) != 0 :
+                self.log_show('文件数量不是' + str(img_cnt) + '的整数倍，不进行处理')
+                return
+            else :
+                self.log_show('打开文件共计'+ str(len(filelist)) + '个')
+            
+            # 读入图像
+            raw_data = np.empty([len(filelist), raw_height*raw_width], dtype=np.uint16)  
+            for i, filename in enumerate(filelist):
+                raw_data[i] = np.fromfile(filename, dtype=np.uint16)
+            # 图像二值化 缩小 求和 求'平均'
+            raw_data[raw_data < dn_threhold] = 0
+            raw_data = raw_data / 1000
+            img = np.sum(raw_data, axis=0)
+            img = img / img_cnt
+            # 重叠图像处理 阈值先缩小1000倍×2(即乘0.002) 灰度值大于该值时更改为阈值的一半 
+            img[img > 0.002*dn_threhold] = (0.001*dn_threhold)/2
+            # 图像灰度值复原 乘以1000
+            img = img * 1000
+                        
+            # 图像输出
+            now = time.strftime('%Y%m%d%H%M%S ', time.localtime(time.time()))
+            fout = 'MultiView-' + now + '.raw'
+            self.raw_file_output(fout, img)
+                        
+            self.log_show('多视场拼图完成，输出文件名:' + fout)
         
         
+        except Exception as e:
+            self.log_show('文件打开失败')
+            self.log_show('异常信息: '+ repr(e)) 
         
         
 # ----------------内部函数----------------
