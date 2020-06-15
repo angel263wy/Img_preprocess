@@ -534,10 +534,13 @@ class Test(QWidget, Ui_Form):
             fout = 'histogram-std-' + now + '.csv'            
             np.savetxt(fout, hist, fmt = '%d', delimiter=',', header=raw_dirs, comments='')
             
-            # 输出直方图统计信息 最大值、位置及半高宽  用\表示换行
-            hist_max, hist_max_pos, hist_fwhm = self.cal_FWHM(hist)
-            hist_stat = ',曲线峰值,' + str(hist_max) + ',峰值对应标准差,'\
-                        + str(hist_max_pos) + ',半高宽,' + str(hist_fwhm)\
+            # 输出直方图统计信息 最大值、位置、半高宽、半高宽中点横坐标、偏心程度  用\表示换行
+            hist_max, hist_max_pos, hist_fwhm, fwhm_mid_pos, std_off_center = self.cal_FWHM(hist)
+            hist_stat = ',曲线峰值,' + str(hist_max) \
+                        + ',峰值横坐标,' + str(hist_max_pos) \
+                        + ',半高宽,' + str(hist_fwhm) \
+                        + ',半高宽中点横坐标,' + str(fwhm_mid_pos) \
+                        + ',偏心程度-负数表示半高宽中点大于峰值坐标,' + str(std_off_center) \
                         + ',直方图长度,' + str(len(hist))
             # 输出            
             with open(fout, 'a') as f:
@@ -702,7 +705,8 @@ class Test(QWidget, Ui_Form):
     噪声统计函数
     输入：直方图数组
     算法：半高宽：找数组最大值，除以2，统计数组中所有大于半个最大值的个数
-    输出：最大值 最大值位置 半高宽
+        偏心程度：最大位置 - 半高宽中点位置
+    输出：最大值 最大值位置 半高宽 半高宽中点 偏心程度
     '''
     def cal_FWHM(self, hist_array):
         # 求最大值位置   
@@ -710,8 +714,13 @@ class Test(QWidget, Ui_Form):
         # 求半高宽
         hist_max = np.max(hist_array)
         fwhm = len(hist_array[hist_array > (hist_max/2)])  # 布尔索引 x[x>1]返回数组x中所有大于1的数 求长度即可
-        
-        return hist_max, hist_max_pos, fwhm  
+        # 求半高宽中点和偏心程度
+        pos_array = np.argwhere(hist_array > (hist_max/2))  # 获取半高宽所有点坐标
+        pos_array = pos_array.flatten()
+        fwhm_mid_pos = pos_array[int(len(pos_array)/2)]  # 长度的一半作为索引选出中间值
+        std_off_center = hist_max_pos - fwhm_mid_pos  # 偏心程度
+                
+        return hist_max, hist_max_pos, fwhm, fwhm_mid_pos, std_off_center  
         
 
 
