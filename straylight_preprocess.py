@@ -44,7 +44,7 @@ class enum_Img_Sequence(Enum):
     lin_910 = 26
     sat_910 = 27
     lin_dk20 = 28
-    sat_dk30 = 29
+    sat_dk80 = 29
     lin_dk1000 = 30
 
 
@@ -59,51 +59,55 @@ def raw_file_output(fname, raw_data):
 '''
 单个光阑处理函数
 读入光阑文件文件夹 检查文件夹内目录数量 检查每个通道文件数量
-每个通道文件逐像元求均值 输出最大均值 
+每个通道文件逐像元求均值 
 '''
 def aperture_process(sl_path, aperture_queue, raw_width, raw_height):
-    # 第一部分 导入文件夹 判断文件夹数量
+    
     os.chdir(sl_path)
-    raw_path = aperture_queue.get()  # 杂光光阑编号 例如5-5 或者 1-4                 
-    img_folder = glob.glob(raw_path + '\\*')  # 获取一个光阑下的所有文件夹 存储31个文件夹
-    if len(img_folder) == 31 :
-        print('光阑编号' + raw_path + '  文件夹数量' + str(len(img_folder))+ '  数量正确')
-    else:
-        print('光阑编号' + raw_path + '  文件夹数量' + str(len(img_folder)) + '  不满足要求')
-        return
-    
-    
-    # 第二部分 处理当前光阑文件夹下图像
-    # 1.判断文件数量合理性
-    err = False
-    for img_dir in img_folder:
-        fnames = glob.glob(img_dir + '\\RAW_ImageData\\*.raw')
-        if (len(fnames) != 29) and (len(fnames) != 59):
-            print('文件夹 ' + img_dir + ' 文件数量' + str(len(fnames)) + ' 不正确')
-            err = True
-    if err:
-        return   
-            
-    # 2.处理最后一层文件夹  img_folder即31个文件夹的列表
-    for img_seq, raw_folder in enumerate(img_folder) :
-        filelist = glob.glob(raw_folder + '\\RAW_ImageData\\*.raw')
+    # 队列非空 进行处理
+    while aperture_queue.qsize() :
+        # 第一部分 导入文件夹 判断文件夹数量
+        raw_path = aperture_queue.get()  # 杂光光阑编号 例如5-5 或者 1-4                 
+        img_folder = glob.glob(raw_path + '\\*')  # 获取一个光阑下的所有文件夹 存储31个文件夹
+        if len(img_folder) == 31 :
+            print('光阑编号' + raw_path + '  文件夹数量' + str(len(img_folder))+ '  数量正确')
+        else:
+            print('光阑编号' + raw_path + '  文件夹数量' + str(len(img_folder)) + '  不满足要求')
+            return
         
-        # 读入所有文件
-        raw_data = np.empty([len(filelist), raw_width*raw_height], dtype=np.uint16)
-        for i, filename in enumerate(filelist):
-            raw_data[i] = np.fromfile(filename, dtype=np.uint16)
-        # 求平均值
-        img_mean = np.mean(raw_data, axis=0)
-        # 输出  raw_path例如4-3 
-        fout = 'aperture__' + raw_path + '_' + enum_Img_Sequence(img_seq).name + '.raw'
-        current_cwd = os.getcwd()  # 获取当前路径 保存现场
-        fout_path = sl_path + '\\img_mean'   # 生成文件保存的路径       
-        if not os.path.exists(fout_path): # 文件夹不存在则创建
-            os.mkdir(fout_path)
-        os.chdir(fout_path)  # 进入文件保存的路径
-        raw_file_output(fout, img_mean)
-        os.chdir(current_cwd)  # 恢复现场
-        print('out  ' + fout)
+        
+        # 第二部分 处理当前光阑文件夹下图像
+        # 1.判断文件数量合理性
+        err = False
+        for img_dir in img_folder:
+            fnames = glob.glob(img_dir + '\\RAW_ImageData\\*.raw')
+            if (len(fnames) != 29) and (len(fnames) != 59):
+                print('文件夹 ' + img_dir + ' 文件数量' + str(len(fnames)) + ' 不正确')
+                err = True
+        if err:
+            return   
+                
+        # 2.处理最后一层文件夹  img_folder即31个文件夹的列表
+        for img_seq, raw_folder in enumerate(img_folder) :
+            filelist = glob.glob(raw_folder + '\\RAW_ImageData\\*.raw')
+            
+            # 读入所有文件
+            raw_data = np.empty([len(filelist), raw_width*raw_height], dtype=np.uint16)
+            for i, filename in enumerate(filelist):
+                raw_data[i] = np.fromfile(filename, dtype=np.uint16)
+            # 求平均值
+            img_mean = np.mean(raw_data, axis=0)
+            
+            # 输出  raw_path例如4-3 
+            fout = 'aperture__' + raw_path + '_' + enum_Img_Sequence(img_seq).name + '.raw'
+            current_cwd = os.getcwd()  # 获取当前路径 保存现场
+            fout_path = sl_path + '\\img_mean'   # 生成文件保存的路径       
+            if not os.path.exists(fout_path): # 文件夹不存在则创建
+                os.mkdir(fout_path)
+            os.chdir(fout_path)  # 进入文件保存的路径         
+            raw_file_output(fout, img_mean)
+            os.chdir(current_cwd)  # 恢复现场
+            print('out  ' + fout)
 
 if __name__ == "__main__":
     raw_width = 1024
@@ -116,7 +120,19 @@ if __name__ == "__main__":
     for dirs in raw_dir :
         aperture_queue.put(dirs)
     
-    aperture_process(stray_light_path, aperture_queue, raw_width, raw_height)    
+    # aperture_process(stray_light_path, aperture_queue, raw_width, raw_height)   
+    
+    p1 = Process(target=aperture_process, args=(stray_light_path, aperture_queue, raw_width, raw_height))
+    p2 = Process(target=aperture_process, args=(stray_light_path, aperture_queue, raw_width, raw_height))
+    p3 = Process(target=aperture_process, args=(stray_light_path, aperture_queue, raw_width, raw_height))
+
+    p_l = [p1, p2, p3]
+    for p in p_l:
+        p.start()
+
+    for p in p_l:
+        p.join()
+    
     print('end')
     
 
