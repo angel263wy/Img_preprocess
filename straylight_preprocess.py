@@ -44,8 +44,8 @@ class enum_Img_Sequence(Enum):
     lin_910 = 26
     sat_910 = 27
     lin_dk20 = 28
-    sat_dk80 = 29
-    lin_dk1000 = 30
+    lin_dk80 = 29
+    sat_dk1000 = 30
 
 
 def raw_file_output(fname, raw_data):
@@ -104,7 +104,11 @@ def aperture_process(sl_path, aperture_queue, raw_width, raw_height):
             fout_path = sl_path + '\\img_mean'   # 生成文件保存的路径       
             if not os.path.exists(fout_path): # 文件夹不存在则创建
                 os.mkdir(fout_path)
-            os.chdir(fout_path)  # 进入文件保存的路径         
+            os.chdir(fout_path)  # 进入文件保存的路径
+            
+            if not os.path.exists(enum_Img_Sequence(img_seq).name):
+                os.mkdir(enum_Img_Sequence(img_seq).name)
+            os.chdir(enum_Img_Sequence(img_seq).name)
             raw_file_output(fout, img_mean)
             os.chdir(current_cwd)  # 恢复现场
             print('out  ' + fout)
