@@ -178,7 +178,13 @@ if __name__ == "__main__":
     
     aperture_queue = Queue()  # 光阑队列 进入队列的为每个光阑的文件夹名称
     for dirs in raw_dir :
-        aperture_queue.put(dirs)
+        if (dirs == 'combine_img') or (dirs == 'img_mean'):
+            pass
+        else:
+            aperture_queue.put(dirs)
+    
+    for i in range(aperture_queue.qsize()):
+        print(i, aperture_queue.get())
     
     # aperture_process(stray_light_path, aperture_queue, raw_width, raw_height)           
     
@@ -189,7 +195,7 @@ if __name__ == "__main__":
     p5 = Process(target=aperture_process, args=(stray_light_path, aperture_queue, raw_width, raw_height))
     p6 = Process(target=aperture_process, args=(stray_light_path, aperture_queue, raw_width, raw_height))
 
-    # print(time.strftime('%Y%m%d-%H%M%S ', time.localtime(time.time())))
+    print(time.strftime('%Y%m%d-%H%M%S ', time.localtime(time.time())))
     # p_l = [p1, p2, p3]
     p_l = [p1, p2, p3, p4, p5, p6]
     for p in p_l:
@@ -222,6 +228,7 @@ if __name__ == "__main__":
         q.join()
     
     
+    print(time.strftime('%Y%m%d-%H%M%S ', time.localtime(time.time())))
     print('end')
     
 
