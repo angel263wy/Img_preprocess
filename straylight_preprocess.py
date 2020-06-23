@@ -3,12 +3,22 @@
 # Date        : 2020/06/21
 # Description :  杂光实时处理软件
 # 针对每个通道 线性区 饱和区的图像求平均，判断最大DN值
-
+'''
+输入参数 main中前几行  图像宽高 拼图阈值 杂光目录
+    raw_width = 1024
+    raw_height = 1030
+    dn_threhold_ratio = 0.85  # 拼图用的二值化 比例 即最大值的百分比作为阈值 小于该值的为0
+    stray_light_path = 'f:\\sl\\'   # 杂光目录 里面应该全是5,5  3,34这类文件夹 没有其他文件夹
+输出
+    stray_light_path目录下新建了一个img_mean文件夹 里面有31个文件夹 对应31个状态 即14个通道线性区和饱和区 3个本底通道积分时间
+    stray_light_path目录下新建了一个combine_img文件夹 用于存放拼图
+'''
 
 import numpy as np
 import os
 import glob
 import struct
+import time
 from enum import Enum,unique
 from multiprocessing import Process, Queue
 
@@ -55,6 +65,8 @@ def raw_file_output(fname, raw_data):
         for i in raw_data.flat:            
             foo = struct.pack('H', int(i))
             f.write(foo)
+
+
 
 '''
 单个光阑处理函数
@@ -111,12 +123,56 @@ def aperture_process(sl_path, aperture_queue, raw_width, raw_height):
             os.chdir(enum_Img_Sequence(img_seq).name)
             raw_file_output(fout, img_mean)
             os.chdir(current_cwd)  # 恢复现场
-            print('out  ' + fout)
+            # print('out  ' + fout)
+
+'''
+拼图函数
+导入文件后二值化，直接相加后输出
+'''
+def img_combine(stray_light_path, band_queue, raw_width, raw_height, dn_threhold_ratio):        
+    # 队列非空 进行处理
+    while band_queue.qsize() :
+        band_name = band_queue.get()
+        img_folder = stray_light_path + 'img_mean\\' + band_name
+        # 文件夹跳转
+        current_cwd = os.getcwd()  # 保护现场
+        if not os.path.exists(img_folder):
+            print('文件夹' + band_name + '不存在 该文件夹数据未处理')
+            return
+        os.chdir(img_folder)
+        
+        filelist = glob.glob('*.raw')
+        if (len(filelist) < 2):
+            print('文件夹' + band_name + '中图像数据少于2 该文件夹数据未处理')
+            return
+        # 读入所有文件
+        raw_data = np.empty([len(filelist), raw_width*raw_height], dtype=np.uint16)
+        for i, filename in enumerate(filelist):
+            raw_data[i] = np.fromfile(filename, dtype=np.uint16)
+        
+        # 二值化
+        dn_threhold = dn_threhold_ratio * np.max(raw_data)
+        raw_data[raw_data < dn_threhold] = 0
+        img = np.sum(raw_data, axis=0)
+        
+        # 统一保存图片
+        combine_folder = stray_light_path + 'combine_img'
+        if not os.path.exists(combine_folder):
+            os.mkdir(combine_folder)
+        os.chdir(combine_folder)
+        raw_file_output(band_name+'.raw', img)
+                
+        print(band_name)
+        
+        os.chdir(current_cwd)  # 恢复现场
+    
+
 
 if __name__ == "__main__":
     raw_width = 1024
     raw_height = 1030
-    stray_light_path = 'e:\\sl\\'
+    dn_threhold_ratio = 0.75  # 拼图用的二值化 比例 即最大值的百分比作为阈值 小于该值的为0
+    stray_light_path = 'f:\\sl\\'
     os.chdir(stray_light_path)
     raw_dir = glob.glob('*')
     
@@ -124,18 +180,47 @@ if __name__ == "__main__":
     for dirs in raw_dir :
         aperture_queue.put(dirs)
     
-    # aperture_process(stray_light_path, aperture_queue, raw_width, raw_height)   
+    # aperture_process(stray_light_path, aperture_queue, raw_width, raw_height)           
     
     p1 = Process(target=aperture_process, args=(stray_light_path, aperture_queue, raw_width, raw_height))
     p2 = Process(target=aperture_process, args=(stray_light_path, aperture_queue, raw_width, raw_height))
     p3 = Process(target=aperture_process, args=(stray_light_path, aperture_queue, raw_width, raw_height))
+    p4 = Process(target=aperture_process, args=(stray_light_path, aperture_queue, raw_width, raw_height))
+    p5 = Process(target=aperture_process, args=(stray_light_path, aperture_queue, raw_width, raw_height))
+    p6 = Process(target=aperture_process, args=(stray_light_path, aperture_queue, raw_width, raw_height))
 
-    p_l = [p1, p2, p3]
+    # print(time.strftime('%Y%m%d-%H%M%S ', time.localtime(time.time())))
+    # p_l = [p1, p2, p3]
+    p_l = [p1, p2, p3, p4, p5, p6]
     for p in p_l:
         p.start()
 
     for p in p_l:
         p.join()
+        
+    # print(time.strftime('%Y%m%d-%H%M%S ', time.localtime(time.time())))
+    print('aperture process end')
+    
+    band_queue = Queue()  # 31个文件夹队列
+    for band in enum_Img_Sequence:
+        band_queue.put(band.name)
+    
+    # img_combine(stray_light_path, band_queue, raw_width, raw_height, dn_threhold_ratio)
+    
+    q1 = Process(target=img_combine, args=(stray_light_path, band_queue, raw_width, raw_height, dn_threhold_ratio))
+    q2 = Process(target=img_combine, args=(stray_light_path, band_queue, raw_width, raw_height, dn_threhold_ratio))
+    q3 = Process(target=img_combine, args=(stray_light_path, band_queue, raw_width, raw_height, dn_threhold_ratio))
+    q4 = Process(target=img_combine, args=(stray_light_path, band_queue, raw_width, raw_height, dn_threhold_ratio))
+    q5 = Process(target=img_combine, args=(stray_light_path, band_queue, raw_width, raw_height, dn_threhold_ratio))
+    q6 = Process(target=img_combine, args=(stray_light_path, band_queue, raw_width, raw_height, dn_threhold_ratio))
+    
+    q_l = [q1, q2, q3, q4, q5, q6]
+    for q in q_l:
+        q.start()
+
+    for q in q_l:
+        q.join()
+    
     
     print('end')
     
