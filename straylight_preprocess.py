@@ -98,7 +98,7 @@ def aperture_process(sl_path, aperture_queue, raw_width, raw_height):
                 err = True
         if err:
             return   
-                
+        
         # 2.处理最后一层文件夹  img_folder即31个文件夹的列表
         for img_seq, raw_folder in enumerate(img_folder) :
             filelist = glob.glob(raw_folder + '\\RAW_ImageData\\*.raw')
@@ -124,7 +124,7 @@ def aperture_process(sl_path, aperture_queue, raw_width, raw_height):
             raw_file_output(fout, img_mean)
             os.chdir(current_cwd)  # 恢复现场
             # print('out  ' + fout)
-
+        
 '''
 拼图函数
 导入文件后二值化，直接相加后输出
@@ -145,14 +145,14 @@ def img_combine(stray_light_path, band_queue, raw_width, raw_height, dn_threhold
         if (len(filelist) < 2):
             print('文件夹' + band_name + '中图像数据少于2 该文件夹数据未处理')
             return
-        # 读入所有文件
+        # 读入所有文件  每读入一次进行二值化
         raw_data = np.empty([len(filelist), raw_width*raw_height], dtype=np.uint16)
         for i, filename in enumerate(filelist):
-            raw_data[i] = np.fromfile(filename, dtype=np.uint16)
+            foo_img = np.fromfile(filename, dtype=np.uint16)
+            dn_threhold = dn_threhold_ratio * np.max(foo_img)
+            foo_img[foo_img < dn_threhold] = 0
+            raw_data[i] = foo_img
         
-        # 二值化
-        dn_threhold = dn_threhold_ratio * np.max(raw_data)
-        raw_data[raw_data < dn_threhold] = 0
         img = np.sum(raw_data, axis=0)
         
         # 统一保存图片
@@ -171,7 +171,7 @@ def img_combine(stray_light_path, band_queue, raw_width, raw_height, dn_threhold
 if __name__ == "__main__":
     raw_width = 1024
     raw_height = 1030
-    dn_threhold_ratio = 0.75  # 拼图用的二值化 比例 即最大值的百分比作为阈值 小于该值的为0
+    dn_threhold_ratio = 0.80  # 拼图用的二值化 比例 即最大值的百分比作为阈值 小于该值的为0
     stray_light_path = 'f:\\sl\\'
     os.chdir(stray_light_path)
     raw_dir = glob.glob('*')
