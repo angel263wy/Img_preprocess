@@ -440,15 +440,16 @@ class Test(QWidget, Ui_Form):
             # 计算单通道信噪比
             if self.radioButton_snr_one_channel.isChecked():
                 now = time.strftime('%Y%m%d%H%M%S ', time.localtime(time.time()))
-                fout = 'SNR-' + now + '.raw'
+                fout_raw = 'SNR-' + now + '.raw'
                 # 计算信噪比并输出
-                img, img_mean, img_std = self.cal_snr(filelist, raw_width, raw_height)
-                self.raw_file_output(fout, img)
-                self.log_show('信噪比计算完成,输出文件名：' + fout)
-                # 计算信噪比统计信息-最值 并输出
-                fout = 'SNR-' + now + '信噪比统计信息.csv'
-                self.cal_snr_statics(img, img_mean, img_std, fout)
-                self.log_show('信噪比统计信息为：' + fout)
+                img = self.cal_snr(filelist, raw_width, raw_height)
+                self.raw_file_output(fout_raw, img)
+                self.log_show('信噪比计算完成,输出文件名：' + fout_raw)
+                fout_csv = 'histogram-snr-' + now + '.csv'
+                self.hist_plot(img)
+                self.hist_save(img, fout_csv, fout_raw)
+                self.log_show('信噪比直方图文件：' + fout_csv)
+
             # 计算多通道信噪比    
             else:       
                 # 记录当前时间 用作文件名
@@ -471,15 +472,15 @@ class Test(QWidget, Ui_Form):
                         self.log_show('通道' + str(ch_cnt)+'文件数量小于3，不能计算信噪比')
                         continue
                     else:                        
-                        fout = 'SNR-CH' + str(ch_cnt).zfill(2) + '-' + now + '.raw'
+                        fout_raw = 'SNR-CH' + str(ch_cnt).zfill(2) + '-' + now + '.raw'
                         # 计算信噪比并输出
-                        img, img_mean, img_std = self.cal_snr(img_file, raw_width, raw_height)
-                        self.raw_file_output(fout, img)
-                        self.log_show('信噪比计算完成,输出文件名：' + fout)
-                        # 计算信噪比统计信息-最值 并输出
-                        fout = 'SNR-CH01-15-' + now + '信噪比统计信息.csv'
-                        self.cal_snr_statics(img, img_mean, img_std, fout, str(ch_cnt))
-                        # self.log_show('信噪比统计信息为：' + fout)
+                        img = self.cal_snr(img_file, raw_width, raw_height)
+                        self.raw_file_output(fout_raw, img)
+                        self.log_show('信噪比计算完成,输出文件名：' + fout_raw)
+                        fout_csv = 'histogram-snr-CH' + str(ch_cnt).zfill(2) + '-' + now + '.csv'
+                        # self.hist_plot(img, fout_csv, fout_raw)
+                        self.hist_plot(img)
+                        self.log_show('信噪比直方图文件：' + fout_csv)
         
         except Exception as e:
             self.log_show('文件打开失败')
@@ -512,7 +513,7 @@ class Test(QWidget, Ui_Form):
             
             # 统一读入文件数量判断 无论是选文件夹方式还是手选方式
             if len(filelist) < 2:
-                self.log_show('选择文件数量小于2，不能计算信噪比')
+                self.log_show('选择文件数量小于2，不能计算噪声')
                 return            
             # 读入文件 生成数组
             raw_data = np.empty([len(filelist), raw_height*raw_width], dtype=np.uint16)
@@ -521,31 +522,12 @@ class Test(QWidget, Ui_Form):
             
             # 计算标准差 为提高精度 标准差乘以10后转整数    
             raw_std = np.std(raw_data, axis=0, ddof=0) * 10
-            raw_std = raw_std.astype(np.int32)
-            hist = np.bincount(raw_std)
-            plt.figure()
-            plt.plot(hist)            
-            plt.title('图像灰度标准差分布图(除以10为实际值)')
-            plt.show()
-            plt.close() 
             
-            # 输出直方图曲线的文件
             now = time.strftime('%Y%m%d%H%M%S ', time.localtime(time.time()))
-            fout = 'histogram-std-' + now + '.csv'            
-            np.savetxt(fout, hist, fmt = '%d', delimiter=',', header=raw_dirs, comments='')
+            fout = 'histogram-std-' + now + '.csv'
             
-            # 输出直方图统计信息 最大值、位置、半高宽、半高宽中点横坐标、偏心程度  用\表示换行
-            hist_max, hist_max_pos, hist_fwhm, fwhm_mid_pos, std_off_center = self.cal_FWHM(hist)
-            hist_stat = ',曲线峰值,' + str(hist_max) \
-                        + ',峰值横坐标,' + str(hist_max_pos) \
-                        + ',半高宽,' + str(hist_fwhm) \
-                        + ',半高宽中点横坐标,' + str(fwhm_mid_pos) \
-                        + ',偏心程度-负数表示半高宽中点大于峰值坐标,' + str(std_off_center) \
-                        + ',直方图长度,' + str(len(hist))
-            # 输出            
-            with open(fout, 'a') as f:
-                f.write(hist_stat)
-
+            self.hist_plot(raw_std)
+            self.hist_save(raw_std, fout, raw_dirs)  # 计算直方图 将文件夹名称作为生成的csv首行
             
             self.log_show('完成' + str(len(filelist)) + '个文件标准差计算')
             self.log_show('输出直方图数据文件' + fout)        
@@ -648,7 +630,8 @@ class Test(QWidget, Ui_Form):
     逐点计算信噪比函数
     输入：文件列表 图像宽和高度
     算法：每个点平均值除以方差 文件总数小于2则输出全零图像
-    输出：信噪比数据 平均值数据 标准差数据 numpy数组 一维数组 长度为宽×高
+    # 旧版 输出：信噪比数据 平均值数据 标准差数据 numpy数组 一维数组 长度为宽×高
+    输出：信噪比数据  numpy数组 一维数组 长度为宽×高
     '''
     def cal_snr(self, filelist, width, height):        
         raw_data = np.empty([len(filelist), width*height], dtype=np.uint16)  
@@ -663,44 +646,10 @@ class Test(QWidget, Ui_Form):
         # 计算信噪比 当标准差为0时 认为信噪比无穷大 用65535表示
         raw_data = raw_mean / raw_std      
         raw_data[raw_data > 9999] == 65535                 
-        return raw_data, raw_mean, raw_std
+        # return raw_data, raw_mean, raw_std
+        return raw_data
     
     
-    '''
-    信噪比统计函数
-    输入:信噪比文件--计算最大信噪比
-        平均值文件--计算最大和最小均值
-        标准差文件--计算最大和最小标准差
-        fout--输出的文件名
-    输出:无
-    '''
-    def cal_snr_statics(self, img, mean, std, fout, ch_str='None'):
-        img_mean_max = np.max(mean)
-        img_mean_min = np.min(mean)
-        img_std_max = np.max(std)
-        img_std_min = np.min(std)
-        img_snr_max = np.max(img)
-        
-        try:  # 判断文件是否存在
-            f = open(fout, 'r')
-            f.close()
-        except FileNotFoundError:  # 没有找到文件 新建文件头
-            with open(fout, 'w') as f:
-                f.write('通道编号,')
-                f.write('信噪比最大值,')
-                f.write('均值最大值,')
-                f.write('均值最小值,')
-                f.write('标准差最大值,')
-                f.write('标准差最小值\n')
-        finally:  # 无论有没有新文件 都要将数据写入文件                    
-            with open(fout, 'a+') as f:
-                f.write(ch_str + ',')
-                f.write(str(img_snr_max) + ',' )
-                f.write(str(img_mean_max) + ',' )
-                f.write(str(img_mean_min) + ',' )
-                f.write(str(img_std_max) + ',' )
-                f.write(str(img_std_min) + '\n')
-            
     '''
     噪声统计函数
     输入：直方图数组
@@ -721,10 +670,47 @@ class Test(QWidget, Ui_Form):
         std_off_center = hist_max_pos - fwhm_mid_pos  # 偏心程度
                 
         return hist_max, hist_max_pos, fwhm, fwhm_mid_pos, std_off_center  
+
+
+    '''
+    直方图生成和曲线绘制
+    形参 raw_data--用于统计直方图的文件
+    输入 图像的直方图
+    处理 转为直方图并绘图
+    '''    
+    def hist_plot(self, raw_data):
+        raw_data = raw_data.astype(np.int32)
+        hist = np.bincount(raw_data)
+        plt.figure()
+        plt.plot(hist) 
+        plt.show()        
+        # plt.close('all') 
+
+    '''
+    直方图数据生成
+    形参 raw_data--用于统计直方图的文件
+    fout--输出csv文件的文件名
+    csv_header--生成csv文件的首行信息
+    输入 图像的直方图
+    处理 绘图 生成csv文件
+    '''       
+    def hist_save(self, raw_data, fout, csv_header='histogram'):    
+        raw_data = raw_data.astype(np.int32)
+        hist = np.bincount(raw_data)
+        np.savetxt(fout, hist, fmt = '%d', delimiter=',', header=csv_header, comments='')
         
+        hist_max, hist_max_pos, hist_fwhm, fwhm_mid_pos, std_off_center = self.cal_FWHM(hist)
+        hist_stat = ',曲线峰值,' + str(hist_max) \
+                    + ',峰值横坐标,' + str(hist_max_pos) \
+                    + ',半高宽,' + str(hist_fwhm) \
+                    + ',半高宽中点横坐标,' + str(fwhm_mid_pos) \
+                    + ',偏心程度-负数表示半高宽中点大于峰值坐标,' + str(std_off_center) \
+                    + ',直方图长度,' + str(len(hist))
+        # 输出            
+        with open(fout, 'a') as f:
+            f.write(hist_stat)
 
 
-    
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)

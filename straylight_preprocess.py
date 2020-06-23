@@ -98,7 +98,7 @@ def aperture_process(sl_path, aperture_queue, raw_width, raw_height):
                 err = True
         if err:
             return   
-        '''
+        
         # 2.处理最后一层文件夹  img_folder即31个文件夹的列表
         for img_seq, raw_folder in enumerate(img_folder) :
             filelist = glob.glob(raw_folder + '\\RAW_ImageData\\*.raw')
@@ -125,7 +125,7 @@ def aperture_process(sl_path, aperture_queue, raw_width, raw_height):
             os.chdir(current_cwd)  # 恢复现场
             # print('out  ' + fout)
         # 第二部分结束
-        '''
+        
 '''
 拼图函数
 导入文件后二值化，直接相加后输出
@@ -217,13 +217,13 @@ if __name__ == "__main__":
     q4 = Process(target=img_combine, args=(stray_light_path, band_queue, raw_width, raw_height, dn_threhold_ratio))
     q5 = Process(target=img_combine, args=(stray_light_path, band_queue, raw_width, raw_height, dn_threhold_ratio))
     q6 = Process(target=img_combine, args=(stray_light_path, band_queue, raw_width, raw_height, dn_threhold_ratio))
-    '''
+    
     q_l = [q1, q2, q3, q4, q5, q6]
     for q in q_l:
         q.start()
     for q in q_l:
         q.join()
-    '''
+    
     
     print(time.strftime('%Y%m%d-%H%M%S ', time.localtime(time.time())))
     print('end')
