@@ -426,19 +426,40 @@ class Test(QWidget, Ui_Form):
         raw_height = self.spinBox_img_height.value()
         
         try:
-            # 读入所有文件数据
-            filelist, filt = QFileDialog.getOpenFileNames(
-                self, filter='raw file(*.raw)', caption='打开图像文件')
-            # 读入文件数量判断
-            if (len(filelist)<2) and self.radioButton_snr_one_channel.isChecked():
-                self.log_show('选择文件数量小于2，不能计算信噪比')
-                return
-            elif (len(filelist)<45) and self.radioButton_snr_all_channel.isChecked():
-                self.log_show('选择文件数量小于45，不能计算信噪比')
-                return
+            # # 读入所有文件数据
+            # filelist, filt = QFileDialog.getOpenFileNames(
+            #     self, filter='raw file(*.raw)', caption='打开图像文件')
+            # # 读入文件数量判断
+            # if (len(filelist)<2) and self.radioButton_snr_one_channel.isChecked():
+            #     self.log_show('选择文件数量小于2，不能计算信噪比')
+            #     return
+            # elif (len(filelist)<45) and self.radioButton_snr_all_channel.isChecked():
+            #     self.log_show('选择文件数量小于45，不能计算信噪比')
+            #     return
             
-            # 计算单通道信噪比
+            # 计算单通道信噪比 选择一个文件夹自动读入数据 如果没有数据 则提示选择单个文件
             if self.radioButton_snr_one_channel.isChecked():
+                
+                ######
+                # 读入所有文件数据
+                raw_dirs = QFileDialog.getExistingDirectory(self, caption='选择文件夹')
+                filelist = glob.glob(raw_dirs + '\\RAW_ImageData\\*.raw')
+                # 未找到文件 转手动选择
+                if len(filelist) == 0 :                 
+                    res = QMessageBox.question(self, '请选择', '未找到RAW文件 是否手动选文件?')
+                    if res == QMessageBox.No:
+                        self.log_show('未进行数据处理')
+                        return
+                    else:                
+                        raw_dirs = 'histogram'  # 改名用于csv文件中表头 不代表目录
+                        filelist, filt = QFileDialog.getOpenFileNames(
+                            self, filter='raw file(*.raw)', caption='打开图像文件')        
+            
+                # 读入文件数量判断 无论是选文件夹方式还是手选方式
+                if len(filelist) < 3:
+                    self.log_show('选择文件数量小于3，不能计算信噪比')
+                    return     
+                                
                 now = time.strftime('%Y%m%d%H%M%S ', time.localtime(time.time()))
                 fout_raw = 'SNR-' + now + '.raw'
                 # 计算信噪比并输出
@@ -447,7 +468,7 @@ class Test(QWidget, Ui_Form):
                 self.log_show('信噪比计算完成,输出文件名：' + fout_raw)
                 fout_csv = 'histogram-snr-' + now + '.csv'
                 self.hist_plot(img)
-                self.hist_save(img, fout_csv, fout_raw)
+                self.hist_save(img, fout_csv, raw_dirs)  # 将文件夹名称作为生成的csv首行
                 self.log_show('信噪比直方图文件：' + fout_csv)
 
             # 计算多通道信噪比    
@@ -527,7 +548,7 @@ class Test(QWidget, Ui_Form):
             fout = 'histogram-std-' + now + '.csv'
             
             self.hist_plot(raw_std)
-            self.hist_save(raw_std, fout, raw_dirs)  # 计算直方图 将文件夹名称作为生成的csv首行
+            self.hist_save(raw_std, fout, raw_dirs)  # 将文件夹名称作为生成的csv首行
             
             self.log_show('完成' + str(len(filelist)) + '个文件标准差计算')
             self.log_show('输出直方图数据文件' + fout)        
