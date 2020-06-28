@@ -680,7 +680,7 @@ class Test(QWidget, Ui_Form):
     输入：直方图数组
     算法：半高宽：找数组最大值，除以2，统计数组中所有大于半个最大值的个数
         偏心程度：最大位置 - 半高宽中点位置
-    输出：最大值 最大值位置 半高宽 半高宽中点 偏心程度
+    输出：字典类型 汉字类型的key  最大值 最大值位置 半高宽 半高宽中点 偏心程度
     '''
     def cal_FWHM(self, hist_array):
         # 求最大值位置   
@@ -693,9 +693,14 @@ class Test(QWidget, Ui_Form):
         pos_array = pos_array.flatten()
         fwhm_mid_pos = pos_array[int(len(pos_array)/2)]  # 长度的一半作为索引选出中间值
         std_off_center = hist_max_pos - fwhm_mid_pos  # 偏心程度
-                
-        return hist_max, hist_max_pos, fwhm, fwhm_mid_pos, std_off_center  
 
+        fwhm_dict = {'曲线峰值': hist_max,
+                    '峰值横坐标':hist_max_pos,
+                    '半高宽':fwhm,
+                    '半高宽中点横坐标':fwhm_mid_pos,
+                    '偏心程度-负数表示半高宽中点大于峰值坐标':std_off_center,
+                    '直方图长度':str(len(hist_array))}
+        return fwhm_dict
 
     '''
     直方图生成和曲线绘制
@@ -714,27 +719,30 @@ class Test(QWidget, Ui_Form):
     '''
     直方图数据生成
     形参 raw_data--用于统计直方图的文件
-    fout--输出csv文件的文件名
+    outfilename--输出csv文件的文件名
     csv_header--生成csv文件的首行信息
     输入 图像的直方图
     处理 绘图 生成csv文件
     '''       
-    def hist_save(self, raw_data, fout, csv_header='histogram'):    
+    def hist_save(self, raw_data, outfilename, csv_header='histogram'):    
         raw_data = raw_data.astype(np.int32)
         hist = np.bincount(raw_data)
-        np.savetxt(fout, hist, fmt = '%d', delimiter=',', header=csv_header, comments='')
         
-        hist_max, hist_max_pos, hist_fwhm, fwhm_mid_pos, std_off_center = self.cal_FWHM(hist)
-        hist_stat = ',曲线峰值,' + str(hist_max) \
-                    + ',峰值横坐标,' + str(hist_max_pos) \
-                    + ',半高宽,' + str(hist_fwhm) \
-                    + ',半高宽中点横坐标,' + str(fwhm_mid_pos) \
-                    + ',偏心程度-负数表示半高宽中点大于峰值坐标,' + str(std_off_center) \
-                    + ',直方图长度,' + str(len(hist))
-        # 输出            
-        with open(fout, 'a') as f:
-            f.write(hist_stat)
+        # 计算直方图参数 返回字典类型
+        hist_dict = self.cal_FWHM(hist)
+        
+        # pandas形成csv文件输出
+        df1 = pd.DataFrame({csv_header: hist})  # 第一个df 用于保存直方图数组
+        # 第二个df 用于保存直方图的信息  index指定行位置 colums指定列顺序
+        df2 = pd.DataFrame(hist_dict,   
+                            index=[0], # 由于字典一个key只有一个value 因此指定[0]表示放第0行
+                            columns=['曲线峰值', '峰值横坐标','半高宽', 
+                                    '半高宽中点横坐标', 
+                                    '偏心程度-负数表示半高宽中点大于峰值坐标','直方图长度']
+                                    )
+        df = pd.concat([df1, df2], axis=1)  # 不同维度df拼接 空白单元格自动用nan补充
 
+        df.to_csv(outfilename, header=True, index=False, encoding='gbk')
 
 
 if __name__ == '__main__':
