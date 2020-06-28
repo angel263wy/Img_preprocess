@@ -524,9 +524,17 @@ class Test(QWidget, Ui_Form):
         try:
             # 读入所有文件数据
             raw_dirs = QFileDialog.getExistingDirectory(self, caption='选择文件夹')
-            filelist = glob.glob(raw_dirs + '\\RAW_ImageData\\*.raw')
+            
+            # 先在所选目录中找文件
+            filelist = glob.glob(raw_dirs + '\\*.raw')
+            
+            # 当前目录未找到图像文件 则在下级RAW_ImageData中找文件
+            if len(filelist) == 0 :
+                self.log_show(raw_dirs + '中没有图像文件, 尝试在RAW_ImageData中寻找')
+                filelist = glob.glob(raw_dirs + '\\RAW_ImageData\\*.raw')
             # 未找到文件 转手动选择
             if len(filelist) == 0 :                 
+                self.log_show('没找到图像文件,转手动选择')
                 res = QMessageBox.question(self, '请选择', '未找到RAW文件 是否手动选文件?')
                 if res == QMessageBox.No:
                     self.log_show('未进行数据处理')
