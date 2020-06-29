@@ -478,7 +478,11 @@ class Test(QWidget, Ui_Form):
                 self.log_show('找到' + str(len(filelist)) + '个文件,正在处理...')
                 
                 # 记录当前时间 用作文件名
-                now = time.strftime('%Y%m%d%H%M%S ', time.localtime(time.time()))    
+                now = time.strftime('%Y%m%d%H%M%S ', time.localtime(time.time())) 
+                
+                hist_df = pd.DataFrame()  # 用于保存15个通道的直方图数值
+                fwhm_df = pd.DataFrame()  # 用于保存直方图的半高宽信息
+                
                 # 第一层循环 ch_cnt表示图像序号 
                 for ch_cnt in range(1, 16): 
                     img_file = list()  # 保存该通道的文件名
@@ -489,7 +493,7 @@ class Test(QWidget, Ui_Form):
                             keyword = '_' + str(ch_cnt) + '.raw'
                         else:
                             keyword = str(ch_cnt).zfill(2) + '.raw'
-                        # 该文件名数据该通道 则加入文件名列表                        
+                        # 该文件名属于该通道 则加入文件名列表                        
                         if keyword in filename:
                             img_file.append(filename)
                     # 第二层循环结束 img_file中存放了所有第ch_cnt通道的图像地址 计算信噪比
@@ -498,15 +502,36 @@ class Test(QWidget, Ui_Form):
                         continue
                     else:                        
                         fout_raw = 'SNR-CH' + str(ch_cnt).zfill(2) + '-' + now + '.raw'
-                        # 计算信噪比并输出
-                        # img = self.cal_snr(img_file, raw_width, raw_height)
+                        df_header = 'Histogram-SNR-CH' + str(ch_cnt).zfill(2)
+                        # 计算该通道信噪比
+                        img = self.cal_snr(img_file, raw_width, raw_height)
+                        # 取消以下两行注释 用于将信噪比文件输出
                         # self.raw_file_output(fout_raw, img)
-                        self.log_show('信噪比计算完成,输出文件名：' + fout_raw)
-                        # fout_csv = 'histogram-snr-CH' + str(ch_cnt).zfill(2) + '-' + now + '.csv'
-                        # # self.hist_plot(img, fout_csv, fout_raw)
-                        # self.hist_plot(img)
-                        # self.log_show('信噪比直方图文件：' + fout_csv)
-        
+                        # self.log_show('信噪比计算完成,输出文件名：' + fout_raw)
+                        
+                        # 对信噪比图像做直方图 并保存数据
+                        img = img.astype(np.int32)
+                        hist = np.bincount(img)
+                        df_foo = pd.DataFrame({df_header:hist})  # 数组转直方图
+                        hist_df = pd.concat([hist_df, df_foo], axis=1)  # 增加一列存放直方图数据
+                        
+                        # 对信噪比直方图曲线半高宽做统计 并保存数据
+                        fwhm_dict = self.cal_FWHM(hist)                        
+                        df_foo = pd.DataFrame(fwhm_dict,   
+                            index=[df_header], # 由于字典一个key只有一个value 因此指定[0]表示放第0行
+                            columns=['曲线峰值', '峰值横坐标','半高宽', 
+                                    '半高宽中点横坐标', 
+                                    '偏心程度-负数表示半高宽中点大于峰值坐标','直方图长度']
+                                    )
+                        fwhm_df = pd.concat([fwhm_df, df_foo], axis=0)
+
+                fout = 'SNR-Hist-' + now + '.csv'
+                hist_df.to_csv(fout, header=True, index=False, encoding='gbk')
+                self.log_show('信噪比直方图文件输出，文件名：' + fout)
+                fout = 'SNR-FWHM-' + now + '.csv'
+                fwhm_df.to_csv(fout, header=True, index=True, encoding='gbk')
+                self.log_show('信噪比直方图曲线评价文件输出，文件名：' + fout)
+                
         except Exception as e:
             self.log_show('文件打开失败')
             self.log_show('异常信息: '+ repr(e)) 
@@ -663,7 +688,6 @@ class Test(QWidget, Ui_Form):
     逐点计算信噪比函数
     输入：文件列表 图像宽和高度
     算法：每个点平均值除以方差 文件总数小于2则输出全零图像
-    # 旧版 输出：信噪比数据 平均值数据 标准差数据 numpy数组 一维数组 长度为宽×高
     输出：信噪比数据  numpy数组 一维数组 长度为宽×高
     '''
     def cal_snr(self, filelist, width, height):        
@@ -679,7 +703,7 @@ class Test(QWidget, Ui_Form):
         # 计算信噪比 当标准差为0时 认为信噪比无穷大 用65535表示
         raw_data = raw_mean / raw_std      
         raw_data[raw_data > 9999] == 65535                 
-        # return raw_data, raw_mean, raw_std
+        
         return raw_data
     
     
