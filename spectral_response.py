@@ -72,7 +72,7 @@ def spectrum_process(s_path, wavelength_queue, raw_width, raw_height, Start_wave
         if not os.path.exists(fout_path): # 文件夹不存在则创建
             os.mkdir(fout_path)
         os.chdir(fout_path)  # 进入文件保存的路径
-        raw_file_output(fout, img_mean)
+        # raw_file_output(fout, img_mean)
         os.chdir(current_cwd)  # 恢复现场
         print(current_wavelength + '波长点文件输出')
         
@@ -101,16 +101,17 @@ def wavelength_maxDN(channel_name, wavelength_maxDN_queue):
     wavelength_maxDN_df.sort_values(by=['wavelength'], ascending=True, inplace=True)
     now = time.strftime('%Y%m%d%H%M%S-', time.localtime(time.time()))
     fout = now + channel_name + '_max_dn.csv'
-    wavelength_maxDN_df.to_csv(fout, header=True, index=True, encoding='gbk')  
+    os.chdir('..')
+    wavelength_maxDN_df.to_csv(fout, header=True, index=False, encoding='gbk')  
     print('图像最大值统计文件输出 文件名为' + fout) 
         
 
 if __name__ == "__main__":
     raw_width = 1024
     raw_height = 1030    
-    Start_wavelength = 418  # 起始波长
-    channel_name = '443'  # 当前通道号或波段号
-    spectral_path = 'e:\\sl\\443'  # 表示某个波段的目录 目录内每个文件夹表示一个波段
+    Start_wavelength = 533  # 起始波长
+    channel_name = 'AA1565'  # 当前通道号或波段号
+    spectral_path = 'e:\\sl\\565'  # 表示某个波段的目录 目录内每个文件夹表示一个波段
     
     os.chdir(spectral_path)
     
