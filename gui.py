@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'e:\wangyi\code\IMG_Preprocess\gui.ui'
+# Form implementation generated from reading ui file 'd:\Temp_prj\Python_prj\Img_preprocess\gui.ui'
 #
-# Created by: PyQt5 UI code generator 5.9.2
+# Created by: PyQt5 UI code generator 5.11.3
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -146,7 +146,7 @@ class Ui_Form(object):
         self.spinBox_gravity_min = QtWidgets.QSpinBox(self.layoutWidget_2)
         self.spinBox_gravity_min.setMinimum(0)
         self.spinBox_gravity_min.setMaximum(99999)
-        self.spinBox_gravity_min.setProperty("value", 900)
+        self.spinBox_gravity_min.setProperty("value", 100)
         self.spinBox_gravity_min.setObjectName("spinBox_gravity_min")
         self.horizontalLayout_4.addWidget(self.spinBox_gravity_min)
         self.layoutWidget_3 = QtWidgets.QWidget(self.groupBox_6)
@@ -162,7 +162,7 @@ class Ui_Form(object):
         self.spinBox_gravity_max.setMinimum(1)
         self.spinBox_gravity_max.setMaximum(99999)
         self.spinBox_gravity_max.setSingleStep(1)
-        self.spinBox_gravity_max.setProperty("value", 13000)
+        self.spinBox_gravity_max.setProperty("value", 17000)
         self.spinBox_gravity_max.setObjectName("spinBox_gravity_max")
         self.horizontalLayout_5.addWidget(self.spinBox_gravity_max)
         self.label_15 = QtWidgets.QLabel(self.groupBox_6)
@@ -341,7 +341,7 @@ class Ui_Form(object):
         self.horizontalLayout_2.addWidget(self.spinBox_img_height)
 
         self.retranslateUi(Form)
-        self.tabWidget.setCurrentIndex(2)
+        self.tabWidget.setCurrentIndex(1)
         self.pushButton_log_clear.clicked.connect(Form.click_log_clear)
         self.pushButton_openIMG_sig.clicked.connect(Form.click_openIMG_sig)
         self.pushButton_open_dark_sig.clicked.connect(Form.click_open_dark_sig)

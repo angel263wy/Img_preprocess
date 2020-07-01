@@ -679,8 +679,13 @@ class Test(QWidget, Ui_Form):
         # y每行均为0,1,2...width mx第0行全0,第1行全1,第2行全2...最后一行全为height 
         my, mx = np.meshgrid(x,y)  
         # 计算重心 DN值乘以坐标值的累加和 / 全图像DN值累加和
-        cenx = np.sum(img * mx) / np.sum(img)
-        ceny = np.sum(img * my) / np.sum(img)
+        img_sum = np.sum(img)
+        if img_sum == 0:
+            cenx = 0
+            ceny = 0
+        else:                
+            cenx = np.sum(img * mx) / np.sum(img)
+            ceny = np.sum(img * my) / np.sum(img)
         
         return cenx, ceny
 
