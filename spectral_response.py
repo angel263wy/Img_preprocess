@@ -13,6 +13,7 @@
 '''
 
 import numpy as np
+import pandas as pd
 import os
 import glob
 import struct
@@ -30,9 +31,16 @@ def raw_file_output(fname, raw_data):
 
 '''
 波长处理函数
-读入每个波长点文件夹 每个通道文件逐像元求均值后输出
+读入每个波长点文件夹 每个通道文件逐像元求均值后输出 获取最大值放入队列
+
+输入： s_path 某波段文件夹的目录 内含所有波长点的文件夹
+wavelength_queue 波长文件夹的目录队列 用于获取
+raw_width，raw_height 图像尺寸
+Start_wavelength 该波段起始波长点 用于将文件夹拆分为波段
+channel_name 当前通道号 
+wavelength_maxDN_queue 该波长点图像逐像元平均后 最大灰度值队列 
 '''
-def spectrum_process(s_path, wavelength_queue, raw_width, raw_height, Start_wavelength, channel_name):
+def spectrum_process(s_path, wavelength_queue, raw_width, raw_height, Start_wavelength, channel_name, wavelength_maxDN_queue):
     os.chdir(s_path)
     # 队列非空 进行处理
     while wavelength_queue.qsize() :
@@ -52,6 +60,10 @@ def spectrum_process(s_path, wavelength_queue, raw_width, raw_height, Start_wave
             raw_data[i] = np.fromfile(filename, dtype=np.uint16)
         # 求平均值
         img_mean = np.mean(raw_data, axis=0)
+        # 产生波长及最大灰度值字典并放入队列 
+        img_maxdn_dict = {'wavelength':current_wavelength, 'max_dn':np.max(img_mean)}
+        wavelength_maxDN_queue.put(img_maxdn_dict) 
+        
         
         # 输出
         fout = 'Spectral_Response-'+ channel_name + '-' + current_wavelength + '.raw'
@@ -64,8 +76,34 @@ def spectrum_process(s_path, wavelength_queue, raw_width, raw_height, Start_wave
         os.chdir(current_cwd)  # 恢复现场
         print(current_wavelength + '波长点文件输出')
         
+    else: # 队列已空 处理完毕 将none传入最大值队列 结束最大值处理
+        wavelength_maxDN_queue.put(None)
 
 
+'''
+波长最大值处理函数
+输入：通道名称 波长最大值队列
+处理： 死循环获取队列元素 形成pd 直到读到表示none的结束符 循环结束后输出
+'''
+def wavelength_maxDN(channel_name, wavelength_maxDN_queue):
+    # 处理最大灰度值队列
+    wavelength_maxDN_df = pd.DataFrame()
+    while True:
+        max_dict = wavelength_maxDN_queue.get()
+        
+        if max_dict == None:  # 处理完成标志 
+            break   
+        # 将字典转df后拼接
+        foo_df = pd.DataFrame(max_dict, index=[0], columns=['wavelength', 'max_dn'])
+        wavelength_maxDN_df = pd.concat([wavelength_maxDN_df, foo_df], axis=0)
+    
+    # 排序后输出
+    wavelength_maxDN_df.sort_values(by=['wavelength'], ascending=True, inplace=True)
+    now = time.strftime('%Y%m%d%H%M%S-', time.localtime(time.time()))
+    fout = now + channel_name + '_max_dn.csv'
+    wavelength_maxDN_df.to_csv(fout, header=True, index=True, encoding='gbk')  
+    print('图像最大值统计文件输出 文件名为' + fout) 
+        
 
 if __name__ == "__main__":
     raw_width = 1024
@@ -78,21 +116,22 @@ if __name__ == "__main__":
     
     raw_dir = glob.glob('*')
     
+    wavelength_maxDN_queue = Queue()  # 单波长图像全图最大灰度值队列 给各进程保存用 最后统一输出
+    
     wavelength_queue = Queue()  # 波长队列 进入队列的为每个波长点的文件夹名称
     for cnt,dirs in enumerate(raw_dir) :
         wavelength_dir_dict = {'wavelength_num':cnt, 'wavelength_dir':dirs}  # 将波长顺序与目录匹配 用于生成波长相关文件
         wavelength_queue.put(wavelength_dir_dict)
     
-    p1 = Process(target=spectrum_process, args=(spectral_path, wavelength_queue, raw_width, raw_height, Start_wavelength, channel_name))
-    p2 = Process(target=spectrum_process, args=(spectral_path, wavelength_queue, raw_width, raw_height, Start_wavelength, channel_name))
-    p3 = Process(target=spectrum_process, args=(spectral_path, wavelength_queue, raw_width, raw_height, Start_wavelength, channel_name))
-    # p4 = Process(target=spectrum_process, args=(spectral_path, wavelength_queue, raw_width, raw_height, Start_wavelength, channel_name))
-    # p5 = Process(target=spectrum_process, args=(spectral_path, wavelength_queue, raw_width, raw_height, Start_wavelength, channel_name))
-    # p6 = Process(target=spectrum_process, args=(spectral_path, wavelength_queue, raw_width, raw_height, Start_wavelength, channel_name))
+    p1 = Process(target=spectrum_process, args=(spectral_path, wavelength_queue, raw_width, raw_height, Start_wavelength, channel_name, wavelength_maxDN_queue))
+    p2 = Process(target=spectrum_process, args=(spectral_path, wavelength_queue, raw_width, raw_height, Start_wavelength, channel_name, wavelength_maxDN_queue))
+    p3 = Process(target=spectrum_process, args=(spectral_path, wavelength_queue, raw_width, raw_height, Start_wavelength, channel_name, wavelength_maxDN_queue))
+    
+    p4 = Process(target=wavelength_maxDN, args=(channel_name, wavelength_maxDN_queue))
 
     print(time.strftime('%Y-%m-%d-%H:%M:%S ', time.localtime(time.time())))
-    p_l = [p1, p2, p3]
-    # p_l = [p1, p2, p3, p4, p5, p6]
+    p_l = [p1, p2, p3, p4]
+
     for p in p_l:
         p.start()
     for p in p_l:
