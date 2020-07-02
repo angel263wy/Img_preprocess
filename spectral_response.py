@@ -59,21 +59,32 @@ def spectrum_process(s_path, wavelength_queue, raw_width, raw_height, Start_wave
         for i, filename in enumerate(filelist):
             raw_data[i] = np.fromfile(filename, dtype=np.uint16)
         # 求平均值
-        img_mean = np.mean(raw_data, axis=0)
+        img_mean = np.mean(raw_data, axis=0) - 710 # 初步扣本底
+        img_mean[img_mean < 0] = 0
+        
         # 产生波长及最大灰度值字典并放入队列 
-        img_maxdn_dict = {'wavelength':current_wavelength, 'max_dn':np.max(img_mean)}
-        wavelength_maxDN_queue.put(img_maxdn_dict) 
+        # 方式一 最大值阈值 计算能量
+        maxdn = np.max(img_mean)        
+        img_mean[img_mean < 120] = 0
+        img_sum = np.sum(img_mean)
+        img_maxdn_dict = {'wavelength':current_wavelength, 'max_dn':img_sum}
+        wavelength_maxDN_queue.put(img_maxdn_dict)        
+        
+        #  方式二 输出最大值
+        # img_maxdn_dict = {'wavelength':current_wavelength, 'max_dn':np.max(img_mean)}
+        # wavelength_maxDN_queue.put(img_maxdn_dict) 
         
         
         # 输出
-        fout = 'Spectral_Response-'+ channel_name + '-' + current_wavelength + '.raw'
-        current_cwd = os.getcwd()  # 获取当前路径 保存现场
-        fout_path = s_path + '\\result_folder'   # 生成文件保存的路径       
-        if not os.path.exists(fout_path): # 文件夹不存在则创建
-            os.mkdir(fout_path)
-        os.chdir(fout_path)  # 进入文件保存的路径
+        # fout = 'Spectral_Response-'+ channel_name + '-' + current_wavelength + '.raw'
+        # current_cwd = os.getcwd()  # 获取当前路径 保存现场
+        # fout_path = s_path + '\\result_folder'   # 生成文件保存的路径       
+        # if not os.path.exists(fout_path): # 文件夹不存在则创建
+        #     os.mkdir(fout_path)
+        # os.chdir(fout_path)  # 进入文件保存的路径
         # raw_file_output(fout, img_mean)
-        os.chdir(current_cwd)  # 恢复现场
+        # os.chdir(current_cwd)  # 恢复现场
+        
         print(current_wavelength + '波长点文件输出')
         
     else: # 队列已空 处理完毕 将none传入最大值队列 结束最大值处理
@@ -109,9 +120,9 @@ def wavelength_maxDN(channel_name, wavelength_maxDN_queue):
 if __name__ == "__main__":
     raw_width = 1024
     raw_height = 1030    
-    Start_wavelength = 533  # 起始波长
-    channel_name = 'AA1565'  # 当前通道号或波段号
-    spectral_path = 'e:\\sl\\565'  # 表示某个波段的目录 目录内每个文件夹表示一个波段
+    Start_wavelength = 645  # 起始波长
+    channel_name = '670P1'  # 当前通道号或波段号
+    spectral_path = 'e:\\sl\\670P1'  # 表示某个波段的目录 目录内每个文件夹表示一个波段
     
     os.chdir(spectral_path)
     
