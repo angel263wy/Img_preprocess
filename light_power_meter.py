@@ -16,12 +16,12 @@ import glob
 import struct
 import time
 
-band = '670'
+band = '490p3'
 filepath = 'e:\\sl\\GUANGPU\\' + band
 os.chdir(filepath)
 filelist = glob.glob('*.csv')
-start_wavelength = 645
-fout = band +'_light_power.csv'
+start_wavelength = 470
+fout = band +'_light_power-30du.csv'
 
 light_power_df = pd.DataFrame()  # 保存该波长的所有文件
 
