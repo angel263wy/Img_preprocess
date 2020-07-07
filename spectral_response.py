@@ -62,6 +62,9 @@ def spectrum_process(raw_info_dict, wavelength_queue, wavelength_maxDN_queue, dk
                             
         for i, filename in enumerate(filelist):
             raw_data[i] = np.fromfile(filename, dtype=np.uint16)
+        # 判断饱和 输出信息        
+        if np.max(raw_data) > 13500 :
+            print(current_wavelength + '波段数据灰度值大于13500 疑似饱和')
         # 求平均值
         img_mean = np.mean(raw_data, axis=0) 
         # 扣本底
@@ -79,7 +82,7 @@ def spectrum_process(raw_info_dict, wavelength_queue, wavelength_maxDN_queue, dk
         # wavelength_maxDN_queue.put(img_maxdn_dict) 
         
         # 方式三 先找最大值 最大值百分比留下来 再小于灰度值清零
-        img_mean[img_mean < 30] = 0  # 小于30 清零 除去
+        img_mean[img_mean < 40] = 0  # 小于30 清零 除去
         dn_sel = np.max(img_mean) * 0.2
         img_mean[img_mean < dn_sel] = 0  # 小于某一阈值的清零
         img_sum = np.sum(img_mean)  # 所有像素求和
@@ -132,9 +135,9 @@ if __name__ == "__main__":
     # 图像信息字典
     raw_info_dict = {'raw_width':1024,
                     'raw_height':1030,
-                    'spectral_path': 'e:\\sl\\490P3-30du',
-                    'channel_name': '490P3',
-                    'Start_wavelength': 470}
+                    'spectral_path': 'e:\\sl\\865P1',
+                    'channel_name': '865P1',
+                    'Start_wavelength': 850}
 
     os.chdir(raw_info_dict['spectral_path'])
     
@@ -147,7 +150,7 @@ if __name__ == "__main__":
     # 处理本底文件
     for dirs in raw_dir :
         # 找本底图像 求平均
-        if 'darkground' in dirs:
+        if 'dkg' in dirs:
             filelist = glob.glob(dirs + '\\RAW_ImageData\\*.raw')
             dk_data = np.zeros([len(filelist), 
                                 raw_info_dict['raw_width']*raw_info_dict['raw_height']], 
