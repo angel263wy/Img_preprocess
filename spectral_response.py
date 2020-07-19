@@ -63,8 +63,8 @@ def spectrum_process(raw_info_dict, wavelength_queue, wavelength_maxDN_queue, dk
         for i, filename in enumerate(filelist):
             raw_data[i] = np.fromfile(filename, dtype=np.uint16)
         # 判断饱和 输出信息        
-        if np.max(raw_data) > 13500 :
-            print(current_wavelength + '波段数据灰度值大于13500 疑似饱和')
+        if np.max(raw_data) > 9000 :
+            print(current_wavelength + '波段数据灰度值大于9000 疑似饱和')
         # 求平均值
         img_mean = np.mean(raw_data, axis=0) 
         # 扣本底
@@ -88,6 +88,7 @@ def spectrum_process(raw_info_dict, wavelength_queue, wavelength_maxDN_queue, dk
         img_sum = np.sum(img_mean)  # 所有像素求和
         img_maxdn_dict = {'wavelength':current_wavelength, 'max_dn':img_sum}
         wavelength_maxDN_queue.put(img_maxdn_dict) 
+        time.sleep(0.1)
         
         # 输出
         # fout = 'Spectral_Response-'+ channel_name + '-' + current_wavelength + '.raw'
@@ -133,11 +134,11 @@ def wavelength_maxDN(raw_info_dict, wavelength_maxDN_queue):
 
 if __name__ == "__main__":
     # 图像信息字典
-    raw_info_dict = {'raw_width':1024,
-                    'raw_height':1030,
-                    'spectral_path': 'e:\\sl\\865P1',
-                    'channel_name': '865P1',
-                    'Start_wavelength': 850}
+    raw_info_dict = {'raw_width':512,
+                    'raw_height':380,
+                    'spectral_path': 'e:\\sl\\910',
+                    'channel_name': '910',
+                    'Start_wavelength': 890}
 
     os.chdir(raw_info_dict['spectral_path'])
     
