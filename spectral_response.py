@@ -136,9 +136,9 @@ if __name__ == "__main__":
     # 图像信息字典
     raw_info_dict = {'raw_width':512,
                     'raw_height':380,
-                    'spectral_path': 'e:\\sl\\910',
-                    'channel_name': '910',
-                    'Start_wavelength': 890}
+                    'spectral_path': 'e:\\sl\\443',
+                    'channel_name': '443',
+                    'Start_wavelength': 423}
 
     os.chdir(raw_info_dict['spectral_path'])
     

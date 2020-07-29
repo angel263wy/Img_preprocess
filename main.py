@@ -15,14 +15,33 @@ import numpy as np
 import pandas as pd
 import glob
 import matplotlib.pyplot as plt
-
-
+import cv2
+from enum import Enum,unique
 
 
 import matplotlib as mpl
 mpl.rcParams['font.sans-serif'] = ['SimHei']
 mpl.rcParams['font.serif'] = ['SimHei']
 mpl.rcParams['axes.unicode_minus'] = False 
+
+
+@unique
+class enum_DPC_band(Enum):
+    band_490P1 = 0
+    band_490P2 = 1
+    band_490P3 = 2
+    band_565 = 3
+    band_670P1 = 4
+    band_670P2 = 5
+    band_670P3 = 6
+    dark_ground = 7
+    band_763 = 8
+    band_765 = 9
+    band_865P1 = 10
+    band_865P2 = 11
+    band_865P3 = 12
+    band_443 = 13
+    band_910 = 14
 
 
 class Test(QWidget, Ui_Form):
@@ -445,7 +464,9 @@ class Test(QWidget, Ui_Form):
                 else:                
                     raw_dirs = 'histogram'  # 改名用于csv文件中表头 不代表目录
                     filelist, filt = QFileDialog.getOpenFileNames(
-                        self, filter='raw file(*.raw)', caption='打开图像文件')              
+                        self, filter='raw file(*.raw)', caption='打开图像文件') 
+            else:  # 在RAW_ImageData中找到文件
+                self.log_show('在RAW_ImageData文件夹中找到图像文件')             
 
                         
             # 计算单通道信噪比 选择一个文件夹自动读入数据 如果没有数据 则提示选择单个文件
@@ -567,7 +588,9 @@ class Test(QWidget, Ui_Form):
                 else:                
                     raw_dirs = 'histogram'  # 改名用于csv文件中表头 不代表目录
                     filelist, filt = QFileDialog.getOpenFileNames(
-                        self, filter='raw file(*.raw)', caption='打开图像文件')        
+                        self, filter='raw file(*.raw)', caption='打开图像文件')  
+            else:  # 在在RAW_ImageData中找到文件
+                self.log_show('在RAW_ImageData文件夹中找到图像文件')      
             
             # 统一读入文件数量判断 无论是选文件夹方式还是手选方式
             if len(filelist) < 2:
@@ -647,7 +670,103 @@ class Test(QWidget, Ui_Form):
             self.log_show('文件打开失败')
             self.log_show('异常信息: '+ repr(e)) 
         
+    
+    
+    '''
+    米字形光源处理函数
+    根据配置的csv文件，计算每个波段图片的光斑重心坐标、灰度值
+    输出： csv文件
+    '''    
+    def click_ml_raw_open(self):
+        # 读入图像的宽和高
+        raw_width = self.spinBox_img_width.value()
+        raw_height = self.spinBox_img_height.value()  
+        # 读入光斑尺寸 判定光斑有效的比率 计算重心DN值的像素尺寸
+        light_spot_size = int(self.spinBox_light_spot_size.value() / 2)
+        threshold_ratio = self.doubleSpinBox_light_spot_maxratio.value()
+        ls_dn_size = self.spinBox_light_spot_dn.value()
         
+        try:
+            # 读入所有文件数据
+            raw_dirs = QFileDialog.getExistingDirectory(self, caption='选择文件夹')
+            # 先在所选目录中找文件
+            filelist = glob.glob(raw_dirs + '\\*.raw')
+            # 当前目录未找到图像文件 则在下级RAW_ImageData中找文件
+            if len(filelist) == 0 :
+                self.log_show(raw_dirs + '中没有图像文件,尝试在RAW_ImageData中寻找')
+                filelist = glob.glob(raw_dirs + '\\RAW_ImageData\\*.raw')                   
+            
+            # 未在RAW_ImageData找到文件 转手动选择
+            if len(filelist) == 0 :
+                self.log_show('没找到图像文件,转手动选择')
+                res = QMessageBox.question(self, '请选择', '未找到RAW文件 是否手动选文件?')
+                if res == QMessageBox.No:
+                    self.log_show('未进行数据处理')
+                    return
+                else:                     
+                    filelist, filt = QFileDialog.getOpenFileNames(
+                        self, filter='raw file(*.raw)', caption='打开图像文件')
+            else:  # 在RAW_ImageData中找到文件
+                self.log_show('在RAW_ImageData文件夹中找到图像文件')
+                
+            if len(filelist)<15 :
+                self.log_show('文件数量小于15 无法进行数据处理')
+                return
+            
+            # 15个通道文件求平均后的图像矩阵
+            all_channel_img = np.empty([15, raw_height*raw_width])
+            
+            # 将文件按照波段划分 并求平均后生成15个通道的图像
+            # 第一层循环 ch_cnt表示图像序号 
+            for ch_cnt in range(1, 16): 
+                img_file = list()  # 保存该通道的文件名
+                # 第二层循环 遍历所有文件 找出所有第ch_cnt个通道的文件
+                for filename in filelist:  
+                    # 生成含有该通道关键字的keyword 判断文件名是否含有该关键字
+                    if filename[-6] == '_' :  # 兼容 _1.raw和 01.raw
+                        keyword = '_' + str(ch_cnt) + '.raw'
+                    else:
+                        keyword = str(ch_cnt).zfill(2) + '.raw'
+                    # 该文件名属于该通道 则加入文件名列表                        
+                    if keyword in filename:
+                        img_file.append(filename)
+                # 第二层循环结束 img_file中存放了所有第ch_cnt通道的图像地址
+                # 读入文件 生成数组 求平均后保存
+                raw_data = np.empty([len(img_file), raw_height*raw_width], dtype=np.uint16)
+                for i, filename in enumerate(img_file):
+                    raw_data[i] = np.fromfile(filename, dtype=np.uint16)
+                all_channel_img[ch_cnt-1] = np.mean(raw_data, axis=0)  # 从0开始 求平均
+            # 以上 文件分离结束 all_channel_img存放有15个求过平均的图像
+
+            # 扣本底 除去负数
+            for i in range(15):
+                all_channel_img[i] = all_channel_img[i] - all_channel_img[7]  # 从0记录 7为本底
+            all_channel_img[all_channel_img < 0 ] = 0        
+            
+            light_spot_df = pd.DataFrame()
+            # 用边沿检测寻找光斑 
+            for ch_cnt in range(15):  # ch_cnt表示通道序号
+                if ch_cnt == 7:  #本底通道 不处理
+                    continue                
+                # 暂存图像矩阵后放入光斑检测函数
+                foo_img = np.reshape(all_channel_img[ch_cnt], (raw_height, raw_width))
+                foo_df = self.light_spot_detection(enum_DPC_band(ch_cnt).name, foo_img, threshold_ratio, light_spot_size, ls_dn_size)
+                # 将该通道数据拼接
+                light_spot_df = pd.concat([light_spot_df, foo_df], axis=0)
+                
+            # 输出
+            now = time.strftime('%Y%m%d%H%M%S', time.localtime(time.time()))
+            fout = 'light_spot_' + now + '.csv'
+            light_spot_df.to_csv(fout, header=True, index=False, encoding='gbk') 
+            self.log_show('光斑数据处理完成 输出文件' + fout)
+            
+        except Exception as e:
+            self.log_show('文件打开失败')
+            self.log_show('异常信息: '+ repr(e))    
+            
+            
+        
+    
 # ----------------内部函数----------------
     # 记录日志函数
     def log_show(self, foo_txt):
@@ -781,6 +900,61 @@ class Test(QWidget, Ui_Form):
 
         df.to_csv(outfilename, header=True, index=False, encoding='gbk')
 
+
+    '''
+    光斑检测函数 
+    输入:
+        ch_cnt 通道编号
+        raw_data 已经变为二维数组的图像文件
+        max_dn_ratio 判定光斑有效的比例 
+        ls_dn_size 求光斑附件N×N个像素灰度平均值
+    '''
+    def light_spot_detection(self, ch_cnt, raw_data, max_dn_ratio, light_spot_size, ls_dn_size):
+        # 获取图像尺寸
+        raw_height, raw_width = raw_data.shape
+        # 判定光斑有效的阈值 便于二值化
+        threhold = max_dn_ratio * np.max(raw_data)  
+        # 二值图像threshold函数 THRESH_BINARY指大于threhold用1表示 返回图像放在foo_raw中
+        retval, foo_raw	= cv2.threshold(raw_data, threhold, 1, cv2.THRESH_BINARY)
+        foo_raw = foo_raw.astype(np.uint8)  # 二值化后转8位图像
+        # 寻找边沿函数 RETR_EXTERNAL指仅找外边沿 CHAIN_APPROX_SIMPLE指简化返回坐标
+        contours, hierarchy	= cv2.findContours(foo_raw, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+        # 该图像中所有光斑信息列表
+        channel = list()
+        center_x = list()
+        center_y = list()
+        center_dn = list()
+        # 针对每找到的光斑进行处理
+        for i in range(len(contours)):
+            # 获取光斑坐标    
+            y = contours[i][0][0][0]
+            x = contours[i][0][0][1]
+        
+            # 构造光斑区域范围  注意保护边沿视场 注意切片左闭右开
+            x_start = 0 if (x-light_spot_size)<0 else x-light_spot_size 
+            y_start = 0 if (y-light_spot_size)<0 else y-light_spot_size 
+            x_end = raw_height if (x+light_spot_size)>=raw_height else x+light_spot_size+1
+            y_end = raw_width if (y+light_spot_size)>=raw_width else y+light_spot_size+1
+            # 构造掩膜图 光斑区域内为1 光斑区域外为0
+            mask_img = np.zeros((raw_height, raw_width))
+            mask_img[x_start:x_end, y_start:y_end] = 1
+            light_spot_img = raw_data * mask_img
+            # 求重心坐标 求重心坐标附近DN值
+            cenx,ceny = self.cal_center_gravity(light_spot_img)
+            light_spot_dn = np.mean(raw_data[int(cenx-ls_dn_size):int(cenx+ls_dn_size+1),\
+                                            int(ceny-ls_dn_size):int(ceny+ls_dn_size+1)])
+            center_x.append(cenx)
+            center_y.append(ceny)
+            center_dn.append(light_spot_dn)
+            channel.append(ch_cnt + '-' + str(i))
+        
+        light_spot_df = pd.DataFrame({'x':center_x, 'y':center_y, 
+                                    'dn':center_dn, 'channel':channel},
+                                        columns=['channel', 'x', 'y', 'dn'])
+        return light_spot_df
+
+        
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
