@@ -45,9 +45,9 @@ def cal_center_gravity(img):
     return cenx, ceny
 
 # 以下参数修改
-fname = 'ch1-s.raw'
-raw_width = 1024
-raw_height = 1030
+fname = '1.raw'
+raw_width = 512
+raw_height = 380
 light_spot_size = int(100 / 2)  # 光斑尺寸
 ratio = 0.5 # 0.5表示当图像灰度值大于最大值X0.5时，认为光斑有效
 dn_size = 1 # 1表示重心坐标3×3像素灰度值求平均
@@ -74,8 +74,12 @@ for i in range(len(contours)):
     y_end = raw_width if (y+light_spot_size)>=raw_width else y+light_spot_size+1
     # 构造掩膜图 光斑区域内为1 光斑区域外为0
     mask_img = np.zeros((raw_height, raw_width))
-    mask_img[x_start:x_end, y_start:y_end] = 1
+    mask_img[x_start:x_end+1, y_start:y_end+1] = 1
     light_spot_img = raw_data * mask_img
+    
+    # 扣掉残留本底 否则边沿光斑计算出现问题
+    foo_th = 0.1 * np.max(light_spot_img)
+    light_spot_img[light_spot_img < foo_th] = 0
     
     cenx,ceny = cal_center_gravity(light_spot_img)
     light_spot_dn = np.mean(raw_data[int(cenx-dn_size):int(cenx+dn_size+1),\

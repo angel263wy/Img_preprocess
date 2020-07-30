@@ -938,8 +938,13 @@ class Test(QWidget, Ui_Form):
             y_end = raw_width if (y+light_spot_size)>=raw_width else y+light_spot_size+1
             # 构造掩膜图 光斑区域内为1 光斑区域外为0
             mask_img = np.zeros((raw_height, raw_width))
-            mask_img[x_start:x_end, y_start:y_end] = 1
+            mask_img[x_start:x_end+1, y_start:y_end+1] = 1
             light_spot_img = raw_data * mask_img
+            
+            # 扣掉残留本底 否则边沿光斑计算出现问题
+            foo_th = 0.1 * np.max(light_spot_img)
+            light_spot_img[light_spot_img < foo_th] = 0
+            
             # 求重心坐标 求重心坐标附近DN值
             cenx,ceny = self.cal_center_gravity(light_spot_img)
             light_spot_dn = np.mean(raw_data[int(cenx-ls_dn_size):int(cenx+ls_dn_size+1),\
