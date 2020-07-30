@@ -100,7 +100,7 @@ class Test(QWidget, Ui_Form):
                 self.log_show('未选择文件')
 
         except Exception as e:
-            self.log_show('文件打开失败')
+            self.log_show('处理过程出现异常')
             self.log_show('异常信息: '+ repr(e))  
 
     # 本底图像处理 打开本底文件后求平均 保存并输出
@@ -144,7 +144,7 @@ class Test(QWidget, Ui_Form):
                 self.log_show('未选择文件')
 
         except Exception as e:
-            self.log_show('文件打开失败')
+            self.log_show('处理过程出现异常')
             self.log_show('异常信息: '+ repr(e))  
 
     # 扣本底函数 
@@ -392,48 +392,63 @@ class Test(QWidget, Ui_Form):
                                 
 
         except Exception as e:
-            self.log_show('文件打开失败')  
+            self.log_show('处理过程出现异常')  
             self.log_show('异常信息: '+ repr(e))     
         
             
     '''
     图像裁剪函数
-    读入X和Y 选择最后的方向尺寸进行裁剪后输出
+    读入起点和终点坐标 裁剪后显示和输出
     '''
     def click_img_cut(self):
         # 读入图像区域窗口
         startX = self.spinBox_cutX.value()
         startY = self.spinBox_cutY.value()
-        cut_size = self.spinBox_cut_size.value()
+        endX = self.spinBox_cutX_end.value()
+        endY = self.spinBox_cutY_end.value()
 
         # 读入图像的宽和高
         raw_width = self.spinBox_img_width.value()
         raw_height = self.spinBox_img_height.value()
         
         # 裁剪尺寸合理性判断 不能超过图像的宽和高
-        if startX + cut_size > raw_width-1 :
-            self.log_show('裁剪区域超过图像尺寸')
+        if startX >= endX :
+            self.log_show('X坐标终点大于起点')
             return
-        elif startY + cut_size > raw_height-1:
-            self.log_show('裁剪区域超过图像尺寸')
+        elif startY >= endY :
+            self.log_show('Y坐标终点大于起点')
+            return
+        elif endX >= raw_width :
+            self.log_show('X坐标终点大于图像尺寸')
+            return
+        elif endY >= raw_height :
+            self.log_show('Y坐标终点大于图像尺寸')
             return
         
-        # 读入单幅图像
-        filename, filt = QFileDialog.getOpenFileName(self, filter='raw file(*.raw)', caption='打开图像文件')
-        if len(filename) == 0:
-            self.log_show('未选择文件')
-            return
-        else:            
-            # 读入图像 特别注意 reshape X为高 Y为宽 不能弄反            
-            tmp = np.fromfile(filename, dtype=np.uint16)
-            raw_data = np.reshape(tmp, (raw_height, raw_width))
-            # 裁剪
-            img = raw_data[startY:startY+cut_size, startX:startX+cut_size]
-            # 输出
-            fout = filename[:-4] + '_cut_size_'+str(cut_size)+'X'+str(cut_size)+'.raw'
-            self.raw_file_output(fout, img)
-            self.log_show('图像裁剪完成 输出文件 '+ fout)
-    
+        try: 
+            # 读入单幅图像
+            filename, filt = QFileDialog.getOpenFileName(self, filter='raw file(*.raw)', caption='打开图像文件')
+            if len(filename) == 0:
+                self.log_show('未选择文件')
+                return
+            else:            
+                # 读入图像 特别注意 reshape X为高 Y为宽 不能弄反            
+                tmp = np.fromfile(filename, dtype=np.uint16)
+                raw_data = np.reshape(tmp, (raw_height, raw_width))
+                # 裁剪
+                img = raw_data[startY:endY+1, startX:endX+1]
+                # 显示
+                plt.figure()
+                plt.imshow(img, cmap='Greys_r') 
+                plt.show() 
+                # 输出
+                fout = filename[:-4] + '_cut_x_'+str(startX)+'_y_'+str(startY)+'.raw'
+                self.raw_file_output(fout, img)
+                self.log_show('图像裁剪完成 输出文件 '+ fout)
+        
+        except Exception as e:
+            self.log_show('处理过程出现异常')
+            self.log_show('异常信息: '+ repr(e)) 
     
     '''
     信噪比功能
@@ -554,7 +569,7 @@ class Test(QWidget, Ui_Form):
                 self.log_show('信噪比直方图曲线评价文件输出，文件名：' + fout)
                 
         except Exception as e:
-            self.log_show('文件打开失败')
+            self.log_show('处理过程出现异常')
             self.log_show('异常信息: '+ repr(e)) 
         
     
@@ -614,7 +629,7 @@ class Test(QWidget, Ui_Form):
             self.log_show('输出直方图数据文件' + fout)        
         
         except Exception as e:
-            self.log_show('文件打开失败')
+            self.log_show('处理过程出现异常')
             self.log_show('异常信息: '+ repr(e))    
     
     '''
@@ -667,7 +682,7 @@ class Test(QWidget, Ui_Form):
         
         
         except Exception as e:
-            self.log_show('文件打开失败')
+            self.log_show('处理过程出现异常')
             self.log_show('异常信息: '+ repr(e)) 
         
     
@@ -761,7 +776,7 @@ class Test(QWidget, Ui_Form):
             self.log_show('光斑数据处理完成 输出文件' + fout)
             
         except Exception as e:
-            self.log_show('文件打开失败')
+            self.log_show('处理过程出现异常')
             self.log_show('异常信息: '+ repr(e))    
             
             
