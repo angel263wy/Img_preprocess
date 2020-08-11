@@ -783,6 +783,104 @@ class Test(QWidget, Ui_Form):
             
         
     
+    '''
+    多通道图像预处理
+    按照文件名求平均 做扣本底 做帧转移后输出
+    '''
+    def click_openIMG_multi(self):
+        # 读入图像的宽和高
+        raw_width = self.spinBox_img_width.value()
+        raw_height = self.spinBox_img_height.value() 
+        
+        try:
+            # 读入所有文件数据
+            raw_dirs = QFileDialog.getExistingDirectory(self, caption='选择文件夹')
+            # 先在所选目录中找文件
+            filelist = glob.glob(raw_dirs + '\\*.raw')
+            # 当前目录未找到图像文件 则在下级RAW_ImageData中找文件
+            if len(filelist) == 0 :
+                self.log_show(raw_dirs + '中没有图像文件,尝试在RAW_ImageData中寻找')
+                filelist = glob.glob(raw_dirs + '\\RAW_ImageData\\*.raw')                   
+            
+            # 未在RAW_ImageData找到文件 转手动选择
+            if len(filelist) == 0 :
+                self.log_show('没找到图像文件,转手动选择')
+                res = QMessageBox.question(self, '请选择', '未找到RAW文件 是否手动选文件?')
+                if res == QMessageBox.No:
+                    self.log_show('未进行数据处理')
+                    return
+                else:                     
+                    filelist, filt = QFileDialog.getOpenFileNames(
+                        self, filter='raw file(*.raw)', caption='打开图像文件')
+            else:  # 在RAW_ImageData中找到文件
+                self.log_show('在RAW_ImageData文件夹中找到图像文件')
+                
+            if len(filelist)<15 :
+                self.log_show('文件数量小于15 无法进行数据处理')
+                return
+            
+            # 15个通道文件求平均后的图像矩阵
+            all_channel_img = np.empty([15, raw_height*raw_width])
+            
+            # 将文件按照波段划分 并求平均后生成15个通道的图像
+            # 第一层循环 ch_cnt表示图像序号 
+            for ch_cnt in range(1, 16): 
+                img_file = list()  # 保存该通道的文件名
+                # 第二层循环 遍历所有文件 找出所有第ch_cnt个通道的文件
+                for filename in filelist:  
+                    # 生成含有该通道关键字的keyword 判断文件名是否含有该关键字
+                    if filename[-6] == '_' :  # 兼容 _1.raw和 01.raw
+                        keyword = '_' + str(ch_cnt) + '.raw'
+                    else:
+                        keyword = str(ch_cnt).zfill(2) + '.raw'
+                    # 该文件名属于该通道 则加入文件名列表                        
+                    if keyword in filename:
+                        img_file.append(filename)
+                # 第二层循环结束 img_file中存放了所有第ch_cnt通道的图像地址
+                # 读入文件 生成数组 求平均后保存
+                raw_data = np.empty([len(img_file), raw_height*raw_width], dtype=np.uint16)
+                for i, filename in enumerate(img_file):
+                    raw_data[i] = np.fromfile(filename, dtype=np.uint16)
+                all_channel_img[ch_cnt-1] = np.mean(raw_data, axis=0)  # 从0开始 求平均
+            # 以上 第一层循环结束 文件分离结束 all_channel_img存放有15个求过平均的图像
+
+            # 扣本底 除去负数
+            if self.checkBox_multi_subdkg.isChecked():
+                for i in range(15):
+                    all_channel_img[i] = all_channel_img[i] - all_channel_img[7]  # 从0记录 7为本底
+                all_channel_img[all_channel_img < 0 ] = 0         
+                # 扣完本底才做帧转移 否则不做            
+                if self.checkBox_multi_smearing.isChecked():                
+                    # 读入帧转移信息 暗行尺寸
+                    dark_line_start = self.spinBox_smear_start_line.value()
+                    dark_line_end = self.spinBox_smear_end_line.value()
+                    # 每幅图像做帧转移
+                    for i in range(15):
+                        # 转二维矩阵
+                        raw_data = np.reshape(all_channel_img[i], (raw_height, raw_width))
+                        # 取N行时 直接用切片操作 对X进行操作取得N行                     
+                        dark_lines = raw_data[dark_line_start:dark_line_end+1, :]
+                        # 求平均
+                        dark_lines_mean = np.mean(dark_lines, axis=0) 
+                        # 帧转移校正并写回原变量 按行扣暗行平均值 广播算法 矩阵每行减去向量 并扣除负值
+                        img_final = np.clip(raw_data - dark_lines_mean, 0, 65530)
+                        all_channel_img[i] = img_final.flatten()
+            # 图像输出
+            now = time.strftime('%Y%m%d%H%M%S ', time.localtime(time.time()))
+            for i in range(15):
+                # 文件名定义
+                fout = enum_DPC_band(i).name + '-' + now + '.raw'
+                self.raw_file_output(fout, all_channel_img[i])
+            
+            self.log_show('多通道处理完成')            
+            
+        except Exception as e:
+            self.log_show('处理过程出现异常')
+            self.log_show('异常信息: '+ repr(e))  
+        
+    
+    
+    
 # ----------------内部函数----------------
     # 记录日志函数
     def log_show(self, foo_txt):
