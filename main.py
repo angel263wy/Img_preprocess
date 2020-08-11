@@ -360,7 +360,8 @@ class Test(QWidget, Ui_Form):
                     # 保存最值 平均值 重心坐标
                     max.append(np.max(tmp_img))
                     min.append(np.min(tmp_img))
-                    mean.append(np.mean(tmp_img))                    
+                    # mean.append(np.mean(tmp_img)) 
+                    mean.append(round(np.mean(tmp_img),2))  # 平均值保留两位小数                   
                     center_gravity_X.append(xc)
                     center_gravity_Y.append(yc)
                 
@@ -821,7 +822,9 @@ class Test(QWidget, Ui_Form):
             cenx = np.sum(img * mx) / np.sum(img)
             ceny = np.sum(img * my) / np.sum(img)
         
-        return cenx, ceny
+        # 保留两位小数返回
+        return round(cenx,2),  round(ceny,2)
+        # return cenx, ceny
 
     '''
     逐点计算信噪比函数
