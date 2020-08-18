@@ -285,7 +285,8 @@ class Test(QWidget, Ui_Form):
         whole_img_max = list()
         whole_img_max_X = list()
         whole_img_max_Y = list()
-        # 存放区域最值和平均值数据
+        zone_mean = list()  # 特征区域所有像元平均值
+        # 存放重心区域最值和平均值数据
         max = list()
         min = list()
         mean = list()
@@ -319,8 +320,7 @@ class Test(QWidget, Ui_Form):
                     if self.radioButton_readDN_max_sel.isChecked():
                         # 最大值附近求重心                        
                         max_window_size = self.spinBox_readDN_max_sel_window_size.value()
-                        # 求最大值坐标
-                        # Xmax, Ymax = np.where(raw_data==np.max(raw_data))
+
                         # 最大值附近区域范围挑选和保护  注意切片左闭右开
                         x_max_start = 0 if (Xmax[0]-max_window_size)<0 else Xmax[0]-max_window_size 
                         y_max_start = 0 if (Ymax[0]-max_window_size)<0 else Ymax[0]-max_window_size 
@@ -346,6 +346,9 @@ class Test(QWidget, Ui_Form):
                         xc = xc + startY
                         yc = yc + startX
                     
+                    # 求特征区域所有像素的平均值
+                    zone_mean.append(round(np.mean(img),2))
+                    
                     # 根据重心以及附近区域计算最值和平均值
                     x = int(round(xc))  # 取得重心整数坐标 四舍五入后取整 注round返回小数
                     y = int(round(yc))
@@ -360,7 +363,7 @@ class Test(QWidget, Ui_Form):
                     # 保存最值 平均值 重心坐标
                     max.append(np.max(tmp_img))
                     min.append(np.min(tmp_img))
-                    # mean.append(np.mean(tmp_img)) 
+                    
                     mean.append(round(np.mean(tmp_img),2))  # 平均值保留两位小数                   
                     center_gravity_X.append(xc)
                     center_gravity_Y.append(yc)
@@ -371,6 +374,7 @@ class Test(QWidget, Ui_Form):
                                     '全图最大值': whole_img_max,
                                     '全图最大值坐标S3-X': whole_img_max_Y,
                                     '全图最大值坐标S3-Y': whole_img_max_X,
+                                    '所选特征区域全像素均值': zone_mean,
                                     '光斑重心S3-X': center_gravity_Y,
                                     '光斑重心S3-Y': center_gravity_X,
                                     '重心区域最大值': max,
@@ -378,7 +382,7 @@ class Test(QWidget, Ui_Form):
                                     '重心区域平均值': mean
                                     }, columns=['文件名','全图最大值',
                                                 '全图最大值坐标S3-X','全图最大值坐标S3-Y',
-                                                '光斑重心S3-X','光斑重心S3-Y', 
+                                                '所选特征区域全像素均值','光斑重心S3-X','光斑重心S3-Y', 
                                                 '重心区域最大值','重心区域最小值', 
                                                 '重心区域平均值'],
                                     index=pd.Index(range(1, len(filelist)+1)))
@@ -386,7 +390,7 @@ class Test(QWidget, Ui_Form):
                 self.log_show('处理图像 共计' + str(len(filelist)) + '个文件')
                 
                 # 输出文件
-                outfile = time.strftime('%Y%m%d%H%M%S.csv', time.localtime(time.time()))
+                outfile = 'Statistics-' + time.strftime('%Y%m%d%H%M%S.csv', time.localtime(time.time()))
                 res.to_csv(outfile, header=True, encoding='gbk')
                 
                 self.log_show('计算结果已输出 文件名为' + outfile)  
