@@ -13,6 +13,7 @@ import time
 import struct
 import numpy as np
 import pandas as pd
+import os
 import glob
 import matplotlib.pyplot as plt
 import cv2
@@ -392,7 +393,7 @@ class Test(QWidget, Ui_Form):
                 # 输出文件
                 outfile = 'Statistics-' + time.strftime('%Y%m%d%H%M%S.csv', time.localtime(time.time()))
                 res.to_csv(outfile, header=True, encoding='gbk')
-                
+                os.system('start'+ ' ' + outfile)
                 self.log_show('计算结果已输出 文件名为' + outfile)  
                                 
 
@@ -498,7 +499,7 @@ class Test(QWidget, Ui_Form):
                 
                 self.log_show('找到' + str(len(filelist)) + '个文件,正在处理...')
                                 
-                now = time.strftime('%Y%m%d%H%M%S ', time.localtime(time.time()))
+                now = time.strftime('%Y%m%d%H%M%S', time.localtime(time.time()))
                 fout_raw = 'SNR-' + now + '.raw'
                 # 计算信噪比并输出
                 img = self.cal_snr(filelist, raw_width, raw_height)
@@ -507,6 +508,7 @@ class Test(QWidget, Ui_Form):
                 fout_csv = 'histogram-snr-' + now + '.csv'
                 self.hist_plot(img)
                 self.hist_save(img, fout_csv, raw_dirs)  # 将文件夹名称作为生成的csv首行
+                os.system('start'+ ' ' + fout_csv)
                 self.log_show('信噪比直方图文件：' + fout_csv)
 
             # 计算多通道信噪比    
@@ -519,7 +521,7 @@ class Test(QWidget, Ui_Form):
                 self.log_show('找到' + str(len(filelist)) + '个文件,正在处理...')
                 
                 # 记录当前时间 用作文件名
-                now = time.strftime('%Y%m%d%H%M%S ', time.localtime(time.time())) 
+                now = time.strftime('%Y%m%d%H%M%S', time.localtime(time.time())) 
                 
                 hist_df = pd.DataFrame()  # 用于保存15个通道的直方图数值
                 fwhm_df = pd.DataFrame()  # 用于保存直方图的半高宽信息
@@ -569,6 +571,8 @@ class Test(QWidget, Ui_Form):
                 fout = 'SNR-Hist-' + now + '.csv'
                 hist_df.to_csv(fout, header=True, index=False, encoding='gbk')
                 self.log_show('信噪比直方图文件输出，文件名：' + fout)
+                os.system('start'+ ' ' + fout)
+                
                 fout = 'SNR-FWHM-' + now + '.csv'
                 fwhm_df.to_csv(fout, header=True, index=True, encoding='gbk')
                 self.log_show('信噪比直方图曲线评价文件输出，文件名：' + fout)
@@ -778,6 +782,7 @@ class Test(QWidget, Ui_Form):
             now = time.strftime('%Y%m%d%H%M%S', time.localtime(time.time()))
             fout = 'light_spot_' + now + '.csv'
             light_spot_df.to_csv(fout, header=True, index=False, encoding='gbk') 
+            os.system('start'+ ' ' + fout)
             self.log_show('光斑数据处理完成 输出文件' + fout)
             
         except Exception as e:
