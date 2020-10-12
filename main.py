@@ -783,7 +783,8 @@ class Test(QWidget, Ui_Form):
                     continue                
                 # 暂存图像矩阵后放入光斑检测函数
                 foo_img = np.reshape(all_channel_img[ch_cnt], (raw_height, raw_width))
-                foo_df = self.light_spot_detection(enum_DPC_band(ch_cnt).name, foo_img, threshold_ratio, light_spot_size, ls_dn_size)
+                foo_df = self.light_spot_detection(str(ch_cnt+1)+'--'+enum_DPC_band(ch_cnt).name, \
+                                                    foo_img, threshold_ratio, light_spot_size, ls_dn_size)
                 # 将该通道数据拼接
                 light_spot_df = pd.concat([light_spot_df, foo_df], axis=0)
                 
@@ -1088,9 +1089,9 @@ class Test(QWidget, Ui_Form):
             center_dn.append(light_spot_dn)
             channel.append(ch_cnt + '-' + str(i))
         
-        light_spot_df = pd.DataFrame({'x':center_x, 'y':center_y, 
+        light_spot_df = pd.DataFrame({'S3-x':center_y, 'S3-y':center_x, 
                                     'dn':center_dn, 'channel':channel},
-                                        columns=['channel', 'x', 'y', 'dn'])
+                                        columns=['channel', 'S3-x', 'S3-y', 'dn'])
         return light_spot_df
 
         
