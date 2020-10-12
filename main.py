@@ -1060,6 +1060,11 @@ class Test(QWidget, Ui_Form):
         center_x = list()
         center_y = list()
         center_dn = list()
+        
+        # 避免同一个光斑被找到两次 保存上次重心数据 如果两次重心坐标较劲，则不保存
+        cenx_last = 0
+        ceny_last = 0 
+        
         # 针对每找到的光斑进行处理
         for i in range(len(contours)):
             # 获取光斑坐标    
@@ -1082,13 +1087,24 @@ class Test(QWidget, Ui_Form):
             
             # 求重心坐标 求重心坐标附近DN值
             cenx,ceny = self.cal_center_gravity(light_spot_img)
+            
+            # 同一个光斑被找到两次的处理
+            # 如果两次重心坐标数值接近，则不保存，循环结束
+            # 否则保存当前重心进行后续处理
+            if abs(cenx-cenx_last) < 10 or abs(ceny-ceny_last) < 10 :
+                continue
+            else:
+                cenx_last = cenx
+                ceny_last = ceny
+            
             light_spot_dn = np.mean(raw_data[int(cenx-ls_dn_size):int(cenx+ls_dn_size+1),\
                                             int(ceny-ls_dn_size):int(ceny+ls_dn_size+1)])
             center_x.append(cenx)
             center_y.append(ceny)
             center_dn.append(light_spot_dn)
             channel.append(ch_cnt + '-' + str(i))
-        
+            # for循环结束 该光斑处理完成
+            
         light_spot_df = pd.DataFrame({'S3-x':center_y, 'S3-y':center_x, 
                                     'dn':center_dn, 'channel':channel},
                                         columns=['channel', 'S3-x', 'S3-y', 'dn'])

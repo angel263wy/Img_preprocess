@@ -33,7 +33,7 @@
     </rect>
    </property>
    <property name="currentIndex">
-    <number>1</number>
+    <number>4</number>
    </property>
    <widget class="QWidget" name="tab">
     <attribute name="title">
@@ -1048,7 +1048,7 @@ p, li { white-space: pre-wrap; }
       <item>
        <widget class="QDoubleSpinBox" name="doubleSpinBox_light_spot_maxratio">
         <property name="decimals">
-         <number>1</number>
+         <number>2</number>
         </property>
         <property name="maximum">
          <double>1.000000000000000</double>
@@ -1057,7 +1057,7 @@ p, li { white-space: pre-wrap; }
          <double>0.100000000000000</double>
         </property>
         <property name="value">
-         <double>0.500000000000000</double>
+         <double>0.650000000000000</double>
         </property>
        </widget>
       </item>
