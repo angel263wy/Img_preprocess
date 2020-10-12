@@ -763,9 +763,18 @@ class Test(QWidget, Ui_Form):
             # 以上 文件分离结束 all_channel_img存放有15个求过平均的图像
 
             # 扣本底 除去负数
+            # dkg_img = all_channel_img[7]
             for i in range(15):
-                all_channel_img[i] = all_channel_img[i] - all_channel_img[7]  # 从0记录 7为本底
+                if i == 7:
+                    continue
+                else:
+                    all_channel_img[i] = all_channel_img[i] - all_channel_img[7]  # 从0记录 7为本底
             all_channel_img[all_channel_img < 0 ] = 0        
+            
+            ##debug
+            # for i in range(15):                
+                # self.raw_file_output(str(i+1)+'.raw', all_channel_img[i])
+            ##debug
             
             light_spot_df = pd.DataFrame()
             # 用边沿检测寻找光斑 
