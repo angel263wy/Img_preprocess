@@ -69,7 +69,7 @@ class Test(QWidget, Ui_Form):
             raw_height = self.spinBox_img_height.value()
 
             # 读入所有文件数据
-            filelist, filt = QFileDialog.getOpenFileNames(
+            filelist, __ = QFileDialog.getOpenFileNames(
                 self, filter='raw file(*.raw)', caption='打开图像文件')
             if len(filelist):  # 选择文件数大于0 则处理 否则不处理
                 raw_data = np.empty(
@@ -112,7 +112,7 @@ class Test(QWidget, Ui_Form):
             raw_height = self.spinBox_img_height.value()
 
             # 读入所有文件数据
-            filelist, filt = QFileDialog.getOpenFileNames(
+            filelist, __ = QFileDialog.getOpenFileNames(
                 self, filter='raw file(*.raw)', caption='打开本底文件')
             if len(filelist):  # 选择文件数大于0 则处理 否则不处理
                 raw_data = np.empty([len(filelist), raw_width*raw_height], dtype=np.uint16)
@@ -250,7 +250,7 @@ class Test(QWidget, Ui_Form):
         # 除去小于0的数据
         raw_dm = np.clip(img, 0, 4095)  
         # 文件输出
-        f_out, filt = QFileDialog.getSaveFileName(self, filter='raw file(*.raw)', caption='保存校正后图像')
+        f_out, __ = QFileDialog.getSaveFileName(self, filter='raw file(*.raw)', caption='保存校正后图像')
         if len(f_out) == 0:
             self.log_show('未选择文件')
         else:                
@@ -297,7 +297,7 @@ class Test(QWidget, Ui_Form):
         
         try:
             # 读入所有文件数据
-            filelist, filt = QFileDialog.getOpenFileNames(self, filter='raw file(*.raw)', caption='打开图像文件')
+            filelist, __ = QFileDialog.getOpenFileNames(self, filter='raw file(*.raw)', caption='打开图像文件')
             if len(filelist) == 0 :  # 选择文件数大于0 进行处理 否则不处理
                 self.log_show('未选择文件')
                 return                
@@ -433,7 +433,7 @@ class Test(QWidget, Ui_Form):
         
         try: 
             # 读入单幅图像
-            filename, filt = QFileDialog.getOpenFileName(self, filter='raw file(*.raw)', caption='打开图像文件')
+            filename, __ = QFileDialog.getOpenFileName(self, filter='raw file(*.raw)', caption='打开图像文件')
             if len(filename) == 0:
                 self.log_show('未选择文件')
                 return
@@ -484,7 +484,7 @@ class Test(QWidget, Ui_Form):
                     return
                 else:                
                     raw_dirs = 'histogram'  # 改名用于csv文件中表头 不代表目录
-                    filelist, filt = QFileDialog.getOpenFileNames(
+                    filelist, __ = QFileDialog.getOpenFileNames(
                         self, filter='raw file(*.raw)', caption='打开图像文件') 
             else:  # 在RAW_ImageData中找到文件
                 self.log_show('在RAW_ImageData文件夹中找到图像文件')             
@@ -611,7 +611,7 @@ class Test(QWidget, Ui_Form):
                     return
                 else:                
                     raw_dirs = 'histogram'  # 改名用于csv文件中表头 不代表目录
-                    filelist, filt = QFileDialog.getOpenFileNames(
+                    filelist, __ = QFileDialog.getOpenFileNames(
                         self, filter='raw file(*.raw)', caption='打开图像文件')  
             else:  # 在在RAW_ImageData中找到文件
                 self.log_show('在RAW_ImageData文件夹中找到图像文件')      
@@ -628,14 +628,15 @@ class Test(QWidget, Ui_Form):
             # 计算标准差 为提高精度 标准差乘以10后转整数    
             raw_std = np.std(raw_data, axis=0, ddof=0) * 10
             
-            now = time.strftime('%Y%m%d%H%M%S ', time.localtime(time.time()))
+            now = time.strftime('%Y%m%d%H%M%S', time.localtime(time.time()))
             fout = 'histogram-std-' + now + '.csv'
             
             self.hist_plot(raw_std)
             self.hist_save(raw_std, fout, raw_dirs)  # 将文件夹名称作为生成的csv首行
             
             self.log_show('完成' + str(len(filelist)) + '个文件标准差计算')
-            self.log_show('输出直方图数据文件' + fout)        
+            self.log_show('输出直方图数据文件' + fout) 
+            os.system('start'+ ' ' + fout)       
         
         except Exception as e:
             self.log_show('处理过程出现异常')
@@ -655,7 +656,7 @@ class Test(QWidget, Ui_Form):
         
         try:
             # 读入所有文件数据
-            filelist, filt = QFileDialog.getOpenFileNames(
+            filelist, __ = QFileDialog.getOpenFileNames(
                 self, filter='raw file(*.raw)', caption='打开图像文件')    
             
             # 文件数量判断
@@ -683,7 +684,7 @@ class Test(QWidget, Ui_Form):
             img = img * 1000
                         
             # 图像输出
-            now = time.strftime('%Y%m%d%H%M%S ', time.localtime(time.time()))
+            now = time.strftime('%Y%m%d%H%M%S', time.localtime(time.time()))
             fout = 'MultiView-' + now + '.raw'
             self.raw_file_output(fout, img)
                         
@@ -728,7 +729,7 @@ class Test(QWidget, Ui_Form):
                     self.log_show('未进行数据处理')
                     return
                 else:                     
-                    filelist, filt = QFileDialog.getOpenFileNames(
+                    filelist, __ = QFileDialog.getOpenFileNames(
                         self, filter='raw file(*.raw)', caption='打开图像文件')
             else:  # 在RAW_ImageData中找到文件
                 self.log_show('在RAW_ImageData文件夹中找到图像文件')
@@ -771,7 +772,7 @@ class Test(QWidget, Ui_Form):
                     all_channel_img[i] = all_channel_img[i] - all_channel_img[7]  # 从0记录 7为本底
             all_channel_img[all_channel_img < 0 ] = 0        
             
-            ##debug
+            ##debug 将预处理后的图片输出
             # for i in range(15):                
                 # self.raw_file_output(str(i+1)+'.raw', all_channel_img[i])
             ##debug
@@ -829,7 +830,7 @@ class Test(QWidget, Ui_Form):
                     self.log_show('未进行数据处理')
                     return
                 else:                     
-                    filelist, filt = QFileDialog.getOpenFileNames(
+                    filelist, __ = QFileDialog.getOpenFileNames(
                         self, filter='raw file(*.raw)', caption='打开图像文件')
             else:  # 在RAW_ImageData中找到文件
                 self.log_show('在RAW_ImageData文件夹中找到图像文件')
@@ -885,7 +886,7 @@ class Test(QWidget, Ui_Form):
                         img_final = np.clip(raw_data - dark_lines_mean, 0, 65530)
                         all_channel_img[i] = img_final.flatten()
             # 图像输出
-            now = time.strftime('%Y%m%d%H%M%S ', time.localtime(time.time()))
+            now = time.strftime('%Y%m%d%H%M%S', time.localtime(time.time()))
             for i in range(15):
                 # 文件名定义
                 fout = enum_DPC_band(i).name + '-' + now + '.raw'
@@ -1050,10 +1051,10 @@ class Test(QWidget, Ui_Form):
         # 判定光斑有效的阈值 便于二值化
         threhold = max_dn_ratio * np.max(raw_data)  
         # 二值图像threshold函数 THRESH_BINARY指大于threhold用1表示 返回图像放在foo_raw中
-        retval, foo_raw	= cv2.threshold(raw_data, threhold, 1, cv2.THRESH_BINARY)
+        __, foo_raw	= cv2.threshold(raw_data, threhold, 1, cv2.THRESH_BINARY)
         foo_raw = foo_raw.astype(np.uint8)  # 二值化后转8位图像
         # 寻找边沿函数 RETR_EXTERNAL指仅找外边沿 CHAIN_APPROX_SIMPLE指简化返回坐标
-        contours, hierarchy	= cv2.findContours(foo_raw, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        contours, __	= cv2.findContours(foo_raw, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
         # 该图像中所有光斑信息列表
         channel = list()
