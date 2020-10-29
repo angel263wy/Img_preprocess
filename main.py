@@ -1102,7 +1102,7 @@ class Test(QWidget, Ui_Form):
                                             int(ceny-ls_dn_size):int(ceny+ls_dn_size+1)])
             center_x.append(cenx)
             center_y.append(ceny)
-            center_dn.append(light_spot_dn)
+            center_dn.append(round(light_spot_dn,2))
             channel.append(ch_cnt + '-' + str(i))
             # for循环结束 该光斑处理完成
             
